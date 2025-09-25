@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AssistDoc - Your AI Medical Assistant</title>
+
+  <!-- Fonts & Typed.js -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+
+  <!-- AOS for Scroll Animations -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+  <!-- Rive WebGL -->
+  <script src="https://unpkg.com/@rive-app/webgl@2.9.0"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    :root {
+      --primary: #0B1C2C;
+      --secondary: #D4AF37;
+      --background: #F5F5F5;
+      --text-dark: #1A1A1A;
+      --cta: #2C3E50;
+      --success: #2ECC71;
+      --error: #C0392B;
+      --neutral: #B0BEC5;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      color: var(--background);
+      background: #F5F5F5;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    header {
+      background: var(--primary);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      animation: slideDown 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 0;
+    }
+
+    .logo {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--secondary);
+      text-decoration: none;
+      background: var(--secondary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      transition: transform 0.3s ease;
+    }
+
+    .logo:hover {
+      transform: scale(1.05);
+    }
+
+    .nav-links {
+      display: flex;
+      list-style: none;
+      gap: 2rem;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--background);
+      font-weight: 500;
+      position: relative;
+      transition: color 0.3s ease;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 2px;
+      bottom: -5px;
+      left: 0;
+      background: var(--secondary);
+      transition: width 0.3s ease;
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    .nav-links a:hover {
+      color: var(--secondary);
+    }
+
+    .hero {
+      padding: 6rem 0;
+      text-align: center;
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero h1 {
+      font-size: 3.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      background: linear-gradient(45deg, var(--secondary), #FFD700);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: textGlow 2s ease-in-out infinite alternate;
+    }
+
+    .hero p {
+      color: var(--cta);
+      font-size: 1.3rem;
+      margin-bottom: 2rem;
+      opacity: 0.9;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .cta-button {
+      display: inline-block;
+      background: var(--secondary);
+      color: white;
+      padding: 1rem 2.5rem;
+      text-decoration: none;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 8px 24px rgba(212, 175, 55, 0.4);
+      position: relative;
+      overflow: hidden;
+      border: none;
+      cursor: pointer;
+    }
+
+    .cta-button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .cta-button:hover::before {
+      left: 100%;
+    }
+
+    .cta-button:hover {
+      transform: translateY(-4px) scale(1.05);
+      box-shadow: 0 15px 40px rgba(212, 175, 55, 0.6);
+    }
+
+    .features {
+      background: white;
+      padding: 6rem 0;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 3rem;
+      margin-top: 3rem;
+    }
+
+    .feature-card {
+      background: var(--background);
+      color: var(--text-dark);
+      padding: 2.5rem;
+      border-radius: 20px;
+      text-align: center;
+      transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.5s ease;
+      border: 1px solid var(--neutral);
+    }
+
+    .feature-card:hover {
+      transform: translateY(-10px) rotate(2deg);
+      box-shadow: 0 20px 40px rgba(76, 110, 245, 0.25);
+    }
+
+    .feature-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      transition: transform 0.3s ease;
+    }
+
+    .feature-card:hover .feature-icon {
+      transform: scale(1.2);
+    }
+
+    .feature-card h3 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      color: var(--secondary);
+    }
+
+    .how-it-works {
+      background: linear-gradient(135deg, #f8f9ff 0%, #e8f5e8 100%);
+      padding: 6rem 0;
+    }
+
+    .section-title {
+      text-align: center;
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 3rem;
+      position: relative;
+    }
+
+    .section-title::after {
+      content: '';
+      width: 100px;
+      height: 4px;
+      background: var(--secondary);
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-radius: 2px;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      margin-top: 3rem;
+    }
+
+    .step {
+      text-align: center;
+      padding: 2rem;
+      background: var(--background);
+      color: var(--text-dark);
+      border-radius: 15px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+      transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .step:hover {
+      transform: translateY(-8px) scale(1.02);
+    }
+
+    .step-number {
+      background: linear-gradient(45deg, #4c6ef5, #9c88ff);
+      color: white;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem;
+      font-weight: 700;
+      font-size: 1.2rem;
+      transition: transform 0.3s ease;
+    }
+
+    .step:hover .step-number {
+      transform: rotate(360deg);
+    }
+
+    .footer {
+      background: var(--primary);
+      color: var(--background);
+      text-align: center;
+      padding: 2rem 0;
+    }
+
+    .disclaimer {
+      background: #FFF2F0;
+      border: 1px solid var(--error);
+      padding: 1rem;
+      border-radius: 10px;
+      margin: 2rem 0;
+      color: var(--error);
+      font-size: 0.9rem;
+    }
+
+    .penguin-wrapper {
+      max-width: 450px;
+      background: var(--background);
+      margin: 2rem auto 0;
+      text-align: center;
+      border-radius: 20px;
+      padding: 1rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    canvas#riveCanvas {
+      width: 100%;
+      height: 400px;
+      display: block;
+      margin: 0 auto;
+      border-radius: 15px;
+    }
+
+    .penguin-name {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #0a084e;
+      margin-top: 0.5rem;
+    }
+
+    .typed-text {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: rgb(157, 118, 164);
+      margin-top: 1rem;
+      background: var(--background);
+      border-radius: 25px;
+      padding: 0.7rem 1.5rem;
+      display: inline-block;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      animation: pulse 2s infinite;
+    }
+
+    /* Chatbot Styles */
+    .chatbot-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 2000;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .chatbot-container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 90%;
+      max-width: 800px;
+      max-height: 90vh;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chatbot-header {
+      background: var(--primary);
+      color: white;
+      padding: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .chatbot-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 50%;
+      transition: background 0.3s ease;
+    }
+
+    .close-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .chat-messages {
+      flex: 1;
+      padding: 1.5rem;
+      overflow-y: auto;
+      min-height: 400px;
+      max-height: 400px;
+      background: #f8f9fa;
+    }
+
+    .message {
+      margin-bottom: 1rem;
+      animation: slideUp 0.3s ease;
+    }
+
+    .message.bot {
+      text-align: left;
+    }
+
+    .message.user {
+      text-align: right;
+    }
+
+    .message-content {
+      display: inline-block;
+      max-width: 70%;
+      padding: 1rem 1.5rem;
+      border-radius: 20px;
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+
+    .message.bot .message-content {
+      background: var(--primary);
+      color: white;
+      border-bottom-left-radius: 5px;
+    }
+
+    .message.user .message-content {
+      background: var(--secondary);
+      color: white;
+      border-bottom-right-radius: 5px;
+    }
+
+    .chat-input-container {
+      padding: 1.5rem;
+      background: white;
+      border-top: 1px solid #e9ecef;
+    }
+
+    .symptom-input {
+      width: 100%;
+      padding: 1rem;
+      border: 2px solid #e9ecef;
+      border-radius: 25px;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.3s ease;
+    }
+
+    .symptom-input:focus {
+      border-color: var(--secondary);
+    }
+
+    .input-actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .send-btn {
+      background: var(--secondary);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 25px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      flex: 1;
+    }
+
+    .send-btn:hover {
+      background: #b8941f;
+    }
+
+    .send-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .answer-buttons {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .answer-btn {
+      background: var(--background);
+      color: var(--text-dark);
+      border: 2px solid var(--secondary);
+      padding: 0.75rem 1.5rem;
+      border-radius: 25px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      flex: 1;
+      min-width: 120px;
+    }
+
+    .answer-btn:hover {
+      background: var(--secondary);
+      color: white;
+    }
+
+    .diagnosis-result {
+      background: var(--error);
+      border-radius: 15px;
+      padding: 1.5rem;
+      margin-top: 1rem;
+      border: 1px solid var(--success);
+    }
+
+    .diagnosis-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--success);
+      margin-bottom: 1rem;
+    }
+
+    .hospital-recommendations {
+      background: var(--primary);
+      border-radius: 10px;
+      padding: 1rem;
+      margin-top: 1rem;
+      border: 1px solid var(--secondary);
+    }
+
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #666;
+      font-style: italic;
+    }
+
+    .typing-dots {
+      display: flex;
+      gap: 0.25rem;
+    }
+
+    .typing-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #666;
+      animation: typing 1.4s infinite;
+    }
+
+    .typing-dot:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .typing-dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes slideDown {
+      from {
+        transform: translateY(-100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes textGlow {
+      from {
+        text-shadow: 0 0 5px rgba(212, 175, 55, 0.5);
+      }
+      to {
+        text-shadow: 0 0 20px rgba(212, 175, 55, 0.8), 0 0 30px rgba(212, 175, 55, 0.4);
+      }
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+      50% {
+        transform: scale(1.05);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      }
+      100% {
+        transform: scale(1);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(20px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes typing {
+      0%, 60%, 100% {
+        transform: translateY(0);
+      }
+      30% {
+        transform: translateY(-10px);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .hero h1 {
+        font-size: 2.5rem;
+      }
+      .nav-links {
+        display: none;
+      }
+      .features-grid {
+        grid-template-columns: 1fr;
+      }
+      canvas#riveCanvas {
+        height: 300px;
+      }
+      .chatbot-container {
+        width: 95%;
+        max-height: 95vh;
+      }
+      .answer-buttons {
+        flex-direction: column;
+      }
+      .answer-btn {
+        min-width: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav class="container">
+      <a href="#" class="logo">AssistDoc</a>
+      <ul class="nav-links">
+        <li><a href="#home">Home</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section class="hero" id="home" data-aos="fade-up" data-aos-duration="1000">
+    <div class="container">
+      <h1>YOUR ASSISTANT DOCTOR</h1>
+      <p>Get preliminary medical guidance through intelligent symptom analysis, personalized questioning, and direct hospital connections - all in one platform.</p>
+      <div class="hero-content-flex">
+        <button class="cta-button" onclick="startConsultation()">Start Your Consultation</button>
+        <div class="penguin-wrapper" data-aos="zoom-in" data-aos-delay="300">
+          <canvas id="riveCanvas"></canvas>
+          <div class="penguin-name">Dr. Peppy</div>
+          <div id="typed-output" class="typed-text"></div>
+        </div>
+      </div>
+      <div class="disclaimer" data-aos="fade-up" data-aos-delay="500">
+        <strong>Important:</strong> AssistDoc provides preliminary guidance only and is not a substitute for professional medical advice. Always consult with qualified healthcare providers for proper diagnosis and treatment.
+      </div>
+    </div>
+  </section>
+
+  <section class="features" id="features">
+    <div class="container">
+      <h2 class="section-title" data-aos="fade-up">Why Choose AssistDoc?</h2>
+      <div class="features-grid">
+        <div class="feature-card" data-aos="flip-up" data-aos-delay="100">
+          <div class="feature-icon">🤖</div>
+          <h3>Smart Symptom Analysis</h3>
+          <p>Our AI uses advanced algorithms to analyze your symptoms and ask targeted questions, just like a real doctor would during consultation.</p>
+        </div>
+        <div class="feature-card" data-aos="flip-up" data-aos-delay="200">
+          <div class="feature-icon">🎯</div>
+          <h3>Intelligent Questioning</h3>
+          <p>Experience smart questioning that narrows down possibilities through strategic inquiries and detailed symptom analysis.</p>
+        </div>
+        <div class="feature-card" data-aos="flip-up" data-aos-delay="300">
+          <div class="feature-icon">🏥</div>
+          <h3>Hospital Integration</h3>
+          <p>Get connected to the nearest specialized hospitals and book appointments with the right doctors for your specific condition.</p>
+        </div>
+        <div class="feature-card" data-aos="flip-up" data-aos-delay="400">
+          <div class="feature-icon">⚡</div>
+          <h3>Instant Recommendations</h3>
+          <p>Receive immediate suggestions for necessary tests, specialist consultations, and treatment pathways based on your symptoms.</p>
+        </div>
+        <div class="feature-card" data-aos="flip-up" data-aos-delay="500">
+          <div class="feature-icon">📱</div>
+          <h3>24/7 Availability</h3>
+          <p>Access medical guidance anytime, anywhere. Our AI assistant is always ready to help you understand your health concerns.</p>
+        </div>
+        <div class="feature-card" data-aos="flip-up" data-aos-delay="600">
+          <div class="feature-icon">🔒</div>
+          <h3>Secure & Private</h3>
+          <p>Your health information is protected with enterprise-grade security and complete privacy compliance.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="how-it-works" id="how-it-works">
+    <div class="container">
+      <h2 class="section-title" data-aos="fade-up">How AssistDoc Works</h2>
+      <div class="steps">
+        <div class="step" data-aos="fade-right" data-aos-delay="100">
+          <div class="step-number">1</div>
+          <h3>Describe Your Symptoms</h3>
+          <p>Tell us what you're experiencing. Our AI will listen and understand your primary concerns.</p>
+        </div>
+        <div class="step" data-aos="fade-right" data-aos-delay="200">
+          <div class="step-number">2</div>
+          <h3>Answer Smart Questions</h3>
+          <p>We'll ask targeted questions to narrow down potential causes and understand your condition better.</p>
+        </div>
+        <div class="step" data-aos="fade-right" data-aos-delay="300">
+          <div class="step-number">3</div>
+          <h3>Get Test Recommendations</h3>
+          <p>Based on your symptoms, we'll suggest appropriate tests like blood work, imaging, or specialist consultations.</p>
+        </div>
+        <div class="step" data-aos="fade-right" data-aos-delay="400">
+          <div class="step-number">4</div>
+          <h3>Find Nearby Hospitals</h3>
+          <p>We'll locate the nearest hospitals with the right specialists for your condition and help you book appointments.</p>
+        </div>
+        <div class="step" data-aos="fade-right" data-aos-delay="500">
+          <div class="step-number">5</div>
+          <h3>Book Your Appointment</h3>
+          <p>Schedule directly with healthcare providers through our integrated booking system.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer" data-aos="fade-up">
+    <div class="container">
+      <p>© 2025 AssistDoc. All rights reserved. | This service provides preliminary guidance only and does not replace professional medical advice.</p>
+    </div>
+  </footer>
+
+  <!-- Chatbot Modal -->
+  <div id="chatbot-modal" class="chatbot-modal">
+    <div class="chatbot-container">
+      <div class="chatbot-header">
+        <div class="chatbot-title">
+          🩺 Dr. Peppy - Medical Assistant
+        </div>
+        <button class="close-btn" onclick="closeChatbot()">&times;</button>
+      </div>
+      <div id="chat-messages" class="chat-messages">
+        <!-- Messages will be dynamically added here -->
+      </div>
+      <div class="chat-input-container">
+        <input type="text" id="symptom-input" class="symptom-input" placeholder="Describe your symptoms..." />
+        <div class="input-actions">
+          <button id="send-btn" class="send-btn" onclick="sendMessage()">Send Message</button>
+        </div>
+        <div id="answer-buttons" class="answer-buttons" style="display: none;">
+          <!-- Answer buttons will be dynamically added here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Initialize AOS
+    AOS.init({
+      duration: 1000,
+      easing: 'ease-out-cubic',
+      once: true,
+      offset: 100
+    });
+
+    // Load Rive animation with error handling
+    // Enhanced JavaScript Code to replace the existing <script> block
+// ... (Your existing AOS, Rive, and Typed.js initialization code remains here) ...
+
+// Rive and Typed.js initialization (Keep this as it is)
+try {
+  const riveInstance = new rive.Rive({
+    src: "DRPEPPY.riv",
+    canvas: document.getElementById("riveCanvas"),
+    autoplay: true,
+    stateMachines: ["State Machine 1"],
+    fit: rive.Fit.contain,
+    alignment: rive.Alignment.center,
+    onLoad: () => {
+      console.log("Dr. Peppy is loaded!");
+      riveInstance.resizeDrawingSurfaceToCanvas();
+    },
+    onLoadError: (err) => {
+      console.error("Failed to load Rive animation:", err);
+      document.getElementById("riveCanvas").style.display = "none";
+    }
+  });
+} catch (error) {
+  console.error("Rive initialization failed:", error);
+  document.getElementById("riveCanvas").style.display = "none";
+}
+
+new Typed('#typed-output', {
+  strings: [
+    "Hi there! I'm Dr. Peppy 🐧",
+    "I will guide you through your symptoms.",
+    "Let's take care of your health together!"
+  ],
+  typeSpeed: 60,
+  backSpeed: 30,
+  loop: true,
+  backDelay: 2000,
+  startDelay: 500,
+  smartBackspace: true
+});
+
+// Smooth scrolling (Keep this as it is)
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function (e) {
+    e.preventDefault();
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) {
+      target.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  });
+});
+
+// -----------------------------------------------------------
+// Medical Knowledge Base - EXPANDED FOR DYNAMIC QUESTIONING
+// -----------------------------------------------------------
+const medicalKnowledge = {
+  // Questions are now objects with a 'key' for tracking, a 'text', and optional 'options'
+  symptoms: {
+    'fever': [
+      { key: 'fever_level', text: 'How high is your fever?', options: ['Low (99-100°F)', 'Medium (100-102°F)', 'High (102°F+)'] },
+      { key: 'fever_duration', text: 'How long have you had the fever?', options: ['Less than 1 day', '1-3 days', 'More than 3 days'] },
+      { key: 'fever_associated', text: 'Do you have any other symptoms like headache, body aches, or fatigue?', options: ['Just fever', 'Headache & Body Aches', 'Cough & Sore Throat', 'Stomach pain & Nausea'] }
+    ],
+    'headache': [
+      { key: 'headache_location', text: 'Where is the pain located?', options: ['Forehead/Temples', 'Back of Head', 'All over'] },
+      { key: 'pain_intensity', text: 'How would you rate the pain intensity from 1-10?', options: ['1-3 (Mild)', '4-6 (Moderate)', '7-10 (Severe)'] },
+      { key: 'sudden_onset', text: 'Was this a sudden, severe headache or gradual onset?', options: ['Sudden and severe', 'Gradual onset'] },
+    ],
+    'cough': [
+      { key: 'cough_type', text: 'Is it a dry cough or are you coughing up mucus?', options: ['Dry cough', 'Cough with mucus'] },
+      { key: 'cough_duration', text: 'How long have you had the cough?', options: ['Less than a week', '1-3 weeks', 'More than a month'] },
+      { key: 'respiratory_difficulty', text: 'Do you have shortness of breath or chest pain?', options: ['No', 'Yes, shortness of breath', 'Yes, chest pain'] }
+    ],
+    'stomach pain': [
+      { key: 'pain_location', text: 'Where exactly is the pain located?', options: ['Upper Abdomen', 'Lower Right Abdomen', 'Lower Left Abdomen', 'All over'] },
+      { key: 'pain_type', text: 'How would you describe the pain?', options: ['Sharp', 'Dull', 'Cramping', 'Burning'] },
+      { key: 'associated_symptoms', text: 'Do you have nausea, vomiting, or changes in bowel movements?', options: ['No', 'Nausea/Vomiting', 'Diarrhea/Constipation'] }
+    ],
+    'chest pain': [
+      { key: 'pain_descriptor', text: 'How would you describe the pain?', options: ['Sharp (Stabbing)', 'Pressure (Squeezing)', 'Burning'] },
+      { key: 'pain_radiation', text: 'Does the pain radiate to your arm, neck, or jaw?', options: ['No', 'Yes, to arm/shoulder', 'Yes, to neck/jaw'] },
+      { key: 'associated_symptoms_chest', text: 'Are you experiencing shortness of breath or sweating?', options: ['No', 'Shortness of breath only', 'Sweating and Shortness of breath'] }
+    ]
+  },
+  
+  // Follow-up logic (to be used in askNextQuestion)
+  followUpLogic: {
+    // Follow-up for 'fever_associated' answer 'Headache & Body Aches'
+    'fever_associated': {
+      'Headache & Body Aches': [{ key: 'stiff_neck', text: 'Do you have a stiff neck or sensitivity to bright light?', options: ['No, I don\'t', 'Yes, stiff neck', 'Yes, light sensitivity'] }],
+      'Stomach pain & Nausea': [{ key: 'stomach_localization', text: 'Is the stomach pain mainly in the lower right side?', options: ['No, it\'s everywhere', 'Yes, lower right side'] }]
+    },
+    // Follow-up for 'headache' question
+    'pain_intensity': {
+      '7-10 (Severe)': [{ key: 'visual_changes', text: 'Are you experiencing any visual changes (blurriness, spots) or vomiting?', options: ['No', 'Yes, visual changes', 'Yes, vomiting'] }]
+    },
+    // Follow-up for 'stomach pain' question
+    'pain_location': {
+      'Lower Right Abdomen': [{ key: 'worse_with_movement', text: 'Is the pain getting significantly worse when you cough or walk?', options: ['No, it\'s constant', 'Yes, much worse with movement'] }]
+    }
+  },
+
+  conditions: {
+    // ... your existing conditions (can be expanded later) ...
+    'common cold': { symptoms: ['runny nose', 'cough', 'mild fever', 'sore throat'], recommendations: 'Rest, fluids, over-the-counter medications', urgency: 'low', specialist: 'General Practitioner' },
+    'flu': { symptoms: ['high fever', 'body aches', 'fatigue', 'cough'], recommendations: 'Rest, antiviral medications if caught early', urgency: 'medium', specialist: 'General Practitioner' },
+    'migraine': { symptoms: ['severe headache', 'nausea', 'light sensitivity'], recommendations: 'Rest in dark room, pain medications, avoid triggers', urgency: 'medium', specialist: 'Neurologist' },
+    'appendicitis': { symptoms: ['right lower stomach pain', 'fever', 'nausea'], recommendations: 'Immediate medical attention required', urgency: 'high', specialist: 'Emergency Medicine' },
+    'heart attack': { symptoms: ['chest pain', 'shortness of breath', 'sweating', 'nausea'], recommendations: 'Call 911 immediately', urgency: 'emergency', specialist: 'Cardiologist' }
+  }
+};
+
+// Chatbot State Management - UPDATED
+let chatState = {
+  currentSymptom: '',
+  // questionIndex will now track the index in the original symptom array
+  questionIndex: 0, 
+  // dynamicQuestionStack will hold follow-up questions for a deeper dive
+  dynamicQuestionStack: [], 
+  symptomAnswers: {}, // Stores {key: answer} for diagnostic analysis
+  conversationHistory: []
+};
+
+// Hospital Database (Keep this as it is)
+const hospitalDatabase = [
+  {
+    name: "Mumbai General Hospital",
+    specialties: ["Emergency Medicine", "General Practitioner", "Cardiology"],
+    distance: "2.5 km",
+    phone: "+91-22-12345678"
+  },
+  {
+    name: "Kokilaben Dhirubhai Ambani Hospital",
+    specialties: ["Neurology", "Cardiology", "Oncology"],
+    distance: "5.2 km",
+    phone: "+91-22-98765432"
+  },
+  {
+    name: "Lilavati Hospital",
+    specialties: ["General Practitioner", "Orthopedics", "Gastroenterology"],
+    distance: "3.8 km",
+    phone: "+91-22-11223344"
+  }
+];
+
+// Start consultation function (Keep this as it is)
+function startConsultation() {
+  document.getElementById('chatbot-modal').style.display = 'block';
+  initializeChatbot();
+}
+
+// Close chatbot (Keep this as it is)
+function closeChatbot() {
+  document.getElementById('chatbot-modal').style.display = 'none';
+  resetChatbot();
+}
+
+// Initialize chatbot (Keep this as it is)
+function initializeChatbot() {
+  const chatMessages = document.getElementById('chat-messages');
+  chatMessages.innerHTML = '';
+  
+  addBotMessage("Hello! I'm Dr. Peppy, your AI medical assistant. 🩺");
+  setTimeout(() => {
+    addBotMessage("Please describe your main symptom or what you're experiencing right now.");
+  }, 1000);
+  
+  document.getElementById('symptom-input').focus();
+}
+
+// Add message functions (Keep these as they are)
+function addBotMessage(message) {
+  const chatMessages = document.getElementById('chat-messages');
+  const messageDiv = document.createElement('div');
+  messageDiv.classList.add('message', 'bot');
+  messageDiv.innerHTML = `<div class="message-content">${message}</div>`;
+  chatMessages.appendChild(messageDiv);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function addUserMessage(message) {
+  const chatMessages = document.getElementById('chat-messages');
+  const messageDiv = document.createElement('div');
+  messageDiv.classList.add('message', 'user');
+  messageDiv.innerHTML = `<div class="message-content">${message}</div>`;
+  chatMessages.appendChild(messageDiv);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// Typing indicator functions (Keep these as they are)
+function showTypingIndicator() {
+  const chatMessages = document.getElementById('chat-messages');
+  const typingDiv = document.createElement('div');
+  typingDiv.classList.add('message', 'bot');
+  typingDiv.id = 'typing-indicator';
+  typingDiv.innerHTML = `
+    <div class="message-content">
+      <div class="typing-indicator">
+        <span>Dr. Peppy is typing</span>
+        <div class="typing-dots">
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+        </div>
+      </div>
+    </div>
+  `;
+  chatMessages.appendChild(typingDiv);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function hideTypingIndicator() {
+  const typingIndicator = document.getElementById('typing-indicator');
+  if (typingIndicator) {
+    typingIndicator.remove();
+  }
+}
+
+// Send message function (Keep this as it is)
+function sendMessage() {
+  const input = document.getElementById('symptom-input');
+  const message = input.value.trim();
+  
+  if (message === '') return;
+  
+  addUserMessage(message);
+  input.value = '';
+  
+  const sendBtn = document.getElementById('send-btn');
+  sendBtn.disabled = true;
+  
+  showTypingIndicator();
+  
+  setTimeout(() => {
+    hideTypingIndicator();
+    processUserMessage(message);
+    sendBtn.disabled = false;
+  }, 1500);
+}
+
+// Process user message - UPDATED to handle first answer
+function processUserMessage(message) {
+  chatState.conversationHistory.push({ type: 'user', content: message, timestamp: new Date() });
+
+  if (chatState.currentSymptom === '') {
+    identifySymptom(message);
+  } else {
+    // Record the answer for the current question
+    const currentQuestionKey = chatState.conversationHistory[chatState.conversationHistory.length - 2].questionKey;
+    if (currentQuestionKey) {
+        chatState.symptomAnswers[currentQuestionKey] = message;
+    }
+
+    askNextQuestion(message); // Pass the answer to check for follow-ups
+  }
+}
+
+// Identify symptom from user message (Keep this as it is)
+function identifySymptom(message) {
+  const lowerMessage = message.toLowerCase();
+  let identifiedSymptom = null;
+  
+  for (const symptom in medicalKnowledge.symptoms) {
+    if (lowerMessage.includes(symptom)) {
+      identifiedSymptom = symptom;
+      break;
+    }
+  }
+  
+  if (!identifiedSymptom) {
+    if (lowerMessage.includes('head') || lowerMessage.includes('migraine')) {
+      identifiedSymptom = 'headache';
+    } else if (lowerMessage.includes('temperature') || lowerMessage.includes('hot') || lowerMessage.includes('cold')) {
+      identifiedSymptom = 'fever';
+    } else if (lowerMessage.includes('throat') || lowerMessage.includes('coughing')) {
+      identifiedSymptom = 'cough';
+    } else if (lowerMessage.includes('belly') || lowerMessage.includes('abdomen') || lowerMessage.includes('tummy')) {
+      identifiedSymptom = 'stomach pain';
+    } else if (lowerMessage.includes('dizzy') || lowerMessage.includes('lightheaded')) {
+      identifiedSymptom = 'dizziness';
+    }
+  }
+  
+  if (identifiedSymptom) {
+    chatState.currentSymptom = identifiedSymptom;
+    addBotMessage(`I understand you're experiencing **${identifiedSymptom}**. Let me ask you some specific questions to better understand your condition.`);
+    
+    setTimeout(() => {
+      askNextQuestion();
+    }, 1000);
+  } else {
+    addBotMessage("I'd like to help you better. Could you describe your symptoms using terms like: headache, fever, cough, stomach pain, chest pain, or dizziness?");
+  }
+}
+
+// Ask next question - CRITICAL CHANGE FOR DYNAMIC FLOW
+function askNextQuestion(lastAnswer = null) {
+  const symptomData = medicalKnowledge.symptoms[chatState.currentSymptom];
+  let nextQuestion = null;
+  let currentQuestionKey = null;
+
+  // 1. Check for dynamic follow-up questions first
+  if (lastAnswer) {
+    const lastQuestionKey = chatState.conversationHistory[chatState.conversationHistory.length - 2]?.questionKey;
+    const followUpMap = medicalKnowledge.followUpLogic[lastQuestionKey];
+    
+    // Check if the last answer triggers a follow-up
+    if (followUpMap && followUpMap[lastAnswer]) {
+        // Push all triggered follow-up questions onto the stack
+        chatState.dynamicQuestionStack.push(...followUpMap[lastAnswer]);
+    }
+  }
+
+  // 2. Prioritize questions from the dynamic stack
+  if (chatState.dynamicQuestionStack.length > 0) {
+    nextQuestion = chatState.dynamicQuestionStack.shift(); // Get and remove the first dynamic question
+    currentQuestionKey = nextQuestion.key;
+  } 
+  // 3. Fallback to the main symptom flow
+  else if (chatState.questionIndex < symptomData.length) {
+    nextQuestion = symptomData[chatState.questionIndex];
+    currentQuestionKey = nextQuestion.key;
+    chatState.questionIndex++;
+  }
+
+  // 4. Handle the next question or complete the consultation
+  if (nextQuestion) {
+    addBotMessage(nextQuestion.text);
+    // Log the key of the question being asked for state tracking
+    chatState.conversationHistory.push({ type: 'bot_question', content: nextQuestion.text, questionKey: currentQuestionKey });
+    
+    if (nextQuestion.options && nextQuestion.options.length > 0) {
+      showAnswerButtons(nextQuestion.options, currentQuestionKey);
+    } else {
+        // Hide buttons if the new question doesn't have options
+        document.getElementById('answer-buttons').style.display = 'none';
+    }
+  } else {
+    // All questions answered, provide diagnosis
+    provideDiagnosis();
+  }
+}
+
+// Show answer buttons - UPDATED to pass question key for state tracking
+function showAnswerButtons(options, questionKey) {
+  const answerButtonsDiv = document.getElementById('answer-buttons');
+  answerButtonsDiv.innerHTML = '';
+  
+  options.forEach(buttonText => {
+    const button = document.createElement('button');
+    button.classList.add('answer-btn');
+    button.textContent = buttonText;
+    button.onclick = () => selectAnswer(buttonText, questionKey);
+    answerButtonsDiv.appendChild(button);
+  });
+  
+  // Disable text input and show buttons
+  document.getElementById('symptom-input').style.display = 'none';
+  document.getElementById('send-btn').style.display = 'none';
+  answerButtonsDiv.style.display = 'flex';
+}
+
+// Select answer from buttons - UPDATED
+function selectAnswer(answer, questionKey) {
+  addUserMessage(answer);
+  // Re-enable text input and hide buttons
+  document.getElementById('answer-buttons').style.display = 'none';
+  document.getElementById('symptom-input').style.display = 'block';
+  document.getElementById('send-btn').style.display = 'block';
+  
+  // Record the answer using the question key
+  chatState.symptomAnswers[questionKey] = answer;
+  
+  showTypingIndicator();
+  setTimeout(() => {
+    hideTypingIndicator();
+    // Pass the selected answer for dynamic follow-up check
+    askNextQuestion(answer); 
+  }, 1000);
+}
+
+// Provide diagnosis (Keep this structure)
+function provideDiagnosis() {
+  showTypingIndicator();
+  
+  setTimeout(() => {
+    hideTypingIndicator();
+    
+    const diagnosis = analyzeSymptomsAndAnswers();
+    
+    addBotMessage("Based on your symptoms and answers, here's my assessment:");
+    
+    setTimeout(() => {
+      const diagnosisDiv = document.createElement('div');
+      diagnosisDiv.classList.add('message', 'bot');
+      diagnosisDiv.innerHTML = `
+        <div class="message-content">
+          <div class="diagnosis-result">
+            <div class="diagnosis-title">Preliminary Assessment</div>
+            <p><strong>Possible Condition:</strong> ${diagnosis.condition}</p>
+            <p><strong>Urgency Level:</strong> <span style="color: ${diagnosis.urgency === 'emergency' ? 'red' : diagnosis.urgency === 'High' ? 'orange' : 'inherit'};">${diagnosis.urgency}</span></p>
+            <p><strong>Recommendations:</strong> ${diagnosis.recommendations}</p>
+            <p><strong>Suggested Tests/Specialist:</strong> ${diagnosis.specialist}</p>
+          </div>
+        </div>
+      `;
+      
+      const chatMessages = document.getElementById('chat-messages');
+      chatMessages.appendChild(diagnosisDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }, 1000);
+    
+    setTimeout(() => {
+      showHospitalRecommendations(diagnosis.specialist);
+      resetChatbotStateForNextConsultation(); // Reset state after diagnosis
+    }, 2000);
+    
+  }, 2000);
+}
+
+// Analyze symptoms and provide diagnosis - CRITICAL DIAGNOSTIC LOGIC
+function analyzeSymptomsAndAnswers() {
+  const symptom = chatState.currentSymptom;
+  const answers = chatState.symptomAnswers;
+  
+  let diagnosis = {
+    condition: "General consultation recommended",
+    urgency: "Medium",
+    recommendations: "Consult with a healthcare provider (GP) within 24-48 hours.",
+    tests: "Basic physical examination",
+    specialist: "General Practitioner"
+  };
+  
+  // Specific Diagnosis Logic (The 'Akinator' Decision Tree)
+  if (symptom === 'headache') {
+    if (answers.pain_intensity?.includes('7-10 (Severe)') && answers.visual_changes?.includes('Yes, visual changes')) {
+      // Severe headache with visual changes/vomiting is a red flag for migraine or worse
+      diagnosis.condition = "Severe Headache - Possible Migraine or other CNS issue";
+      diagnosis.urgency = "High";
+      diagnosis.recommendations = "Seek specialist consultation (Neurologist) immediately.";
+      diagnosis.specialist = "Neurologist";
+    } else if (answers.pain_intensity?.includes('7-10 (Severe)') && answers.sudden_onset?.includes('Sudden and severe')) {
+      // Sudden severe headache needs emergency check
+      diagnosis.condition = "Thunderclap Headache - Requires Urgent Evaluation";
+      diagnosis.urgency = "emergency";
+      diagnosis.recommendations = "Go to the nearest Emergency Room immediately.";
+      diagnosis.specialist = "Emergency Medicine";
+    }
+  } else if (symptom === 'fever') {
+    if (answers.fever_level?.includes('High (102°F+)') && answers.fever_duration?.includes('More than 3 days')) {
+      diagnosis.condition = "Persistent High Fever - Likely Systemic Infection";
+      diagnosis.urgency = "High";
+      diagnosis.recommendations = "Seek immediate medical attention for blood tests and treatment.";
+      diagnosis.specialist = "Emergency Medicine";
+    } else if (answers.fever_associated?.includes('Headache & Body Aches') && answers.stiff_neck?.includes('Yes, stiff neck')) {
+      // Fever + stiff neck is a very serious red flag
+      diagnosis.condition = "Meningitis/Severe Systemic Infection - **EMERGENCY**";
+      diagnosis.urgency = "emergency";
+      diagnosis.recommendations = "Call emergency services or go to the ER immediately.";
+      diagnosis.specialist = "Emergency Medicine";
+    }
+  } else if (symptom === 'stomach pain') {
+    if (answers.pain_location?.includes('Lower Right Abdomen') && answers.worse_with_movement?.includes('Yes, much worse with movement')) {
+      // Classic symptoms of appendicitis
+      diagnosis.condition = "Suspected Appendicitis";
+      diagnosis.urgency = "emergency";
+      diagnosis.recommendations = "Do not eat or drink. Go to the nearest Emergency Room immediately for surgery consultation.";
+      diagnosis.specialist = "Emergency Medicine";
+    }
+  } else if (symptom === 'chest pain') {
+    if (answers.pain_descriptor?.includes('Pressure (Squeezing)') && answers.associated_symptoms_chest?.includes('Sweating and Shortness of breath')) {
+      // Classic cardiac symptoms
+      diagnosis.condition = "Suspected Cardiac Event (Heart Attack)";
+      diagnosis.urgency = "emergency";
+      diagnosis.recommendations = "Call emergency services (911/112) immediately. Do not drive yourself.";
+      diagnosis.specialist = "Cardiologist";
+    }
+  }
+  
+  return diagnosis;
+}
+
+// Show hospital recommendations (Keep this structure)
+function showHospitalRecommendations(specialist) {
+  addBotMessage(`Based on the preliminary assessment, you should consult with a **${specialist}**.`);
+  addBotMessage("Here are nearby hospitals where you can get the appropriate care:");
+  
+  const relevantHospitals = hospitalDatabase.filter(hospital => 
+    hospital.specialties.includes(specialist) || hospital.specialties.includes("General Practitioner") || hospital.specialties.includes("Emergency Medicine")
+  );
+  
+  if (relevantHospitals.length === 0) {
+      addBotMessage("Unfortunately, I couldn't find a hospital with that specific specialist nearby. Please search online for a hospital or contact your General Practitioner.");
+      return;
+  }
+
+  relevantHospitals.forEach((hospital, index) => {
+    setTimeout(() => {
+      const hospitalDiv = document.createElement('div');
+      hospitalDiv.classList.add('message', 'bot');
+      hospitalDiv.innerHTML = `
+        <div class="message-content">
+          <div class="hospital-recommendations">
+            <h4>${hospital.name}</h4>
+            <p><strong>Distance:</strong> ${hospital.distance}</p>
+            <p><strong>Specialties:</strong> ${hospital.specialties.join(', ')}</p>
+            <p><strong>Phone:</strong> ${hospital.phone}</p>
+            <button class="cta-button" style="margin-top: 10px; padding: 8px 16px; font-size: 14px;" onclick="bookAppointment('${hospital.name}')">
+              Book Appointment
+            </button>
+          </div>
+        </div>
+      `;
+      
+      const chatMessages = document.getElementById('chat-messages');
+      chatMessages.appendChild(hospitalDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }, (index + 1) * 500);
+  });
+  
+  setTimeout(() => {
+    addBotMessage("Remember: This is a preliminary assessment. Please consult with a qualified healthcare provider for proper diagnosis and treatment. Stay safe! 🏥");
+  }, (relevantHospitals.length + 1) * 500);
+}
+
+// Book appointment function (Keep this as it is)
+function bookAppointment(hospitalName) {
+  addBotMessage(`Great! I'm connecting you with ${hospitalName}. In a real application, this would redirect you to their booking system or call their appointment line.`);
+  
+  setTimeout(() => {
+    addBotMessage("For now, please call them directly or visit their website to book an appointment. Take care and get well soon! 🏥");
+  }, 1000);
+}
+
+// Reset chatbot state
+function resetChatbotStateForNextConsultation() {
+  chatState = {
+    currentSymptom: '',
+    questionIndex: 0,
+    dynamicQuestionStack: [],
+    symptomAnswers: {},
+    conversationHistory: []
+  };
+  
+  document.getElementById('answer-buttons').style.display = 'none';
+  document.getElementById('symptom-input').value = '';
+}
+
+// Enter key support (Keep this as it is)
+document.getElementById('symptom-input').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter' && document.getElementById('symptom-input').style.display !== 'none') {
+    sendMessage();
+  }
+});
+
+// Close modal when clicking outside (Keep this as it is)
+document.getElementById('chatbot-modal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeChatbot();
+  }
+});
+  </script>
+  
+</body>
+</html>
