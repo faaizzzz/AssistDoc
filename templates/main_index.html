@@ -1,0 +1,2391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AssistDoc - Your AI Medical Assistant</title>
+
+  <!-- Fonts & Typed.js -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+
+  <!-- AOS for Scroll Animations -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+  <!-- Google Maps API -->
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBu-916DdpKAjTmJNIgngS6HL_kDIKU0aU&callback=initMap&libraries=places"></script>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    :root {
+      --primary: #0B1C2C;
+      --secondary: #D4AF37;
+      --background: #F5F5F5;
+      --text-dark: #1A1A1A;
+      --cta: #2C3E50;
+      --success: #2ECC71;
+      --error: #C0392B;
+      --neutral: #B0BEC5;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      color: var(--background);
+      background: #F5F5F5;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    header {
+      background: var(--primary);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      animation: slideDown 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 0;
+    }
+
+    .logo {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--secondary);
+      text-decoration: none;
+      background: var(--secondary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      transition: transform 0.3s ease;
+    }
+
+    .logo:hover {
+      transform: scale(1.05);
+    }
+
+    .nav-links {
+      display: flex;
+      list-style: none;
+      gap: 2rem;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--background);
+      font-weight: 500;
+      position: relative;
+      transition: color 0.3s ease;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 2px;
+      bottom: -5px;
+      left: 0;
+      background: var(--secondary);
+      transition: width 0.3s ease;
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    .nav-links a:hover {
+      color: var(--secondary);
+    }
+
+    .hero {
+      padding: 6rem 0;
+      text-align: center;
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero h1 {
+      font-size: 3.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      background: linear-gradient(45deg, var(--secondary), #FFD700);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: textGlow 2s ease-in-out infinite alternate;
+    }
+
+    .hero p {
+      color: var(--cta);
+      font-size: 1.3rem;
+      margin-bottom: 2rem;
+      opacity: 0.9;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .hero-content-flex {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .cta-button {
+      display: inline-block;
+      background: var(--secondary);
+      color: white;
+      padding: 1rem 2.5rem;
+      text-decoration: none;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 8px 24px rgba(212, 175, 55, 0.4);
+      position: relative;
+      overflow: hidden;
+      border: none;
+      cursor: pointer;
+    }
+
+    .cta-button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .cta-button:hover::before {
+      left: 100%;
+    }
+
+    .cta-button:hover {
+      transform: translateY(-4px) scale(1.05);
+      box-shadow: 0 15px 40px rgba(212, 175, 55, 0.6);
+    }
+
+    .features {
+      background: white;
+      padding: 6rem 0;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 3rem;
+      margin-top: 3rem;
+    }
+
+    .feature-card {
+      background: var(--background);
+      color: var(--text-dark);
+      padding: 2.5rem;
+      border-radius: 20px;
+      text-align: center;
+      transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.5s ease;
+      border: 1px solid var(--neutral);
+    }
+
+    .feature-card:hover {
+      transform: translateY(-10px) rotate(2deg);
+      box-shadow: 0 20px 40px rgba(76, 110, 245, 0.25);
+    }
+
+    .feature-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      transition: transform 0.3s ease;
+    }
+
+    .feature-card:hover .feature-icon {
+      transform: scale(1.2);
+    }
+
+    .feature-card h3 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      color: var(--secondary);
+    }
+
+    .how-it-works {
+      background: linear-gradient(135deg, #f8f9ff 0%, #e8f5e8 100%);
+      padding: 6rem 0;
+    }
+
+    .section-title {
+      text-align: center;
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 3rem;
+      position: relative;
+    }
+
+    .section-title::after {
+      content: '';
+      width: 100px;
+      height: 4px;
+      background: var(--secondary);
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-radius: 2px;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      margin-top: 3rem;
+    }
+
+    .step {
+      text-align: center;
+      padding: 2rem;
+      background: var(--background);
+      color: var(--text-dark);
+      border-radius: 15px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+      transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .step:hover {
+      transform: translateY(-8px) scale(1.02);
+    }
+
+    .step-number {
+      background: linear-gradient(45deg, #4c6ef5, #9c88ff);
+      color: white;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem;
+      font-weight: 700;
+      font-size: 1.2rem;
+      transition: transform 0.3s ease;
+    }
+
+    .step:hover .step-number {
+      transform: rotate(360deg);
+    }
+
+    .footer {
+      background: var(--primary);
+      color: var(--background);
+      text-align: center;
+      padding: 2rem 0;
+    }
+
+    .disclaimer {
+      background: #FFF2F0;
+      border: 1px solid var(--error);
+      padding: 1rem;
+      border-radius: 10px;
+      margin: 2rem 0;
+      color: var(--error);
+      font-size: 0.9rem;
+    }
+
+    .penguin-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .penguin-wrapper video {
+      width: 100%;
+      max-width: 350px;
+      height: 330px;
+      object-fit: contain;
+      border-radius: 0px;
+      display: block;
+      margin: 0 auto;
+      transition: transform 0.3s ease;
+      border: none;
+      outline: none;
+    }
+
+    .penguin-wrapper video:hover {
+      transform: scale(1.05);
+    }
+
+    .penguin-name {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #0a084e;
+      margin-top: 0.5rem;
+    }
+
+    .typed-text {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: rgb(157, 118, 164);
+      margin-top: 1rem;
+      background: var(--background);
+      border-radius: 25px;
+      padding: 0.7rem 1.5rem;
+      display: inline-block;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      animation: pulse 2s infinite;
+    }
+
+    /* Chatbot Styles */
+    .chatbot-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 2000;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .chatbot-container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 90%;
+      max-width: 800px;
+      max-height: 90vh;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chatbot-header {
+      background: var(--primary);
+      color: white;
+      padding: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .chatbot-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* <CHANGE> Added mode toggle buttons */
+    .mode-toggle {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .mode-btn {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 2px solid transparent;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+
+    .mode-btn.active {
+      background: var(--secondary);
+      color: var(--primary);
+      border-color: var(--secondary);
+    }
+
+    .mode-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 50%;
+      transition: background 0.3s ease;
+    }
+
+    .close-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .chat-messages {
+      flex: 1;
+      padding: 1.5rem;
+      overflow-y: auto;
+      min-height: 400px;
+      max-height: 400px;
+      background: #f8f9fa;
+    }
+
+    .message {
+      margin-bottom: 1rem;
+      animation: slideUp 0.3s ease;
+    }
+
+    .message.bot {
+      text-align: left;
+    }
+
+    .message.user {
+      text-align: right;
+    }
+
+    .message-content {
+      display: inline-block;
+      max-width: 70%;
+      padding: 1rem 1.5rem;
+      border-radius: 20px;
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+
+    .message.bot .message-content {
+      background: var(--primary);
+      color: white;
+      border-bottom-left-radius: 5px;
+    }
+
+    .message.user .message-content {
+      background: var(--secondary);
+      color: white;
+      border-bottom-right-radius: 5px;
+    }
+
+    .chat-input-container {
+      padding: 1.5rem;
+      background: white;
+      border-top: 1px solid #e9ecef;
+    }
+
+    .symptom-input {
+      width: 100%;
+      padding: 1rem;
+      border: 2px solid #e9ecef;
+      border-radius: 25px;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.3s ease;
+    }
+
+    .symptom-input:focus {
+      border-color: var(--secondary);
+    }
+
+    .input-actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .speech-controls {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+      align-items: center;
+    }
+
+    .speech-btn {
+      background: rgba(11, 28, 44, 0.1);
+      border: 1px solid rgba(11, 28, 44, 0.2);
+      border-radius: 999px;
+      padding: 0.5rem 0.9rem;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+
+    .speech-lang {
+      border: 1px solid rgba(11, 28, 44, 0.2);
+      border-radius: 999px;
+      padding: 0.45rem 0.75rem;
+      background: rgba(255, 255, 255, 0.9);
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+
+    .speech-lang:focus {
+      outline: none;
+      border-color: var(--secondary);
+    }
+
+    .speech-btn:hover {
+      background: rgba(11, 28, 44, 0.15);
+      transform: translateY(-1px);
+    }
+
+    .speech-btn.active {
+      background: var(--secondary);
+      color: white;
+      border-color: var(--secondary);
+    }
+
+    .send-btn {
+      background: var(--secondary);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 25px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      flex: 1;
+    }
+
+    .send-btn:hover {
+      background: #b8941f;
+    }
+
+    .send-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .answer-buttons {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .answer-btn {
+      background: var(--background);
+      color: var(--text-dark);
+      border: 2px solid var(--secondary);
+      padding: 0.75rem 1.5rem;
+      border-radius: 25px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      flex: 1;
+      min-width: 120px;
+    }
+
+    .answer-btn:hover {
+      background: var(--secondary);
+      color: white;
+    }
+
+    .diagnosis-result {
+      background: var(--error);
+      border-radius: 15px;
+      padding: 1.5rem;
+      margin-top: 1rem;
+      border: 1px solid var(--success);
+    }
+
+    .diagnosis-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--success);
+      margin-bottom: 1rem;
+    }
+
+    .hospital-recommendations {
+      background: var(--primary);
+      border-radius: 10px;
+      padding: 1rem;
+      margin-top: 1rem;
+      border: 1px solid var(--secondary);
+    }
+
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #666;
+      font-style: italic;
+    }
+
+    .typing-dots {
+      display: flex;
+      gap: 0.25rem;
+    }
+
+    .typing-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #666;
+      animation: typing 1.4s infinite;
+    }
+
+    .typing-dot:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .typing-dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    /* Hospital List Styles */
+    .hospital-list {
+      background: white;
+      border-radius: 10px;
+      padding: 1rem;
+      margin-top: 1rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .hospital-item {
+      display: flex;
+      align-items: center;
+      padding: 1rem;
+      margin: 0.5rem 0;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border-left: 4px solid var(--secondary);
+      transition: transform 0.2s ease;
+    }
+
+    .hospital-item:hover {
+      transform: translateX(5px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .hospital-icon {
+      font-size: 2rem;
+      margin-right: 1rem;
+      color: var(--error);
+    }
+
+    .hospital-info {
+      flex: 1;
+    }
+
+    .hospital-name {
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 0.25rem;
+    }
+
+    .hospital-details {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 0.25rem;
+    }
+
+    .hospital-specialties {
+      font-size: 0.8rem;
+      color: var(--secondary);
+      font-weight: 500;
+    }
+
+    .hospital-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .hospital-btn {
+      background: var(--secondary);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      text-decoration: none;
+      text-align: center;
+    }
+
+    .hospital-btn:hover {
+      background: #b8941f;
+    }
+
+    .hospital-btn.call {
+      background: var(--success);
+    }
+
+    .hospital-btn.call:hover {
+      background: #27ae60;
+    }
+    
+    /* Urgency styles */
+    .hospital-urgency {
+      font-weight: bold;
+      margin-top: 5px;
+      padding: 5px 10px;
+      border-radius: 4px;
+      display: inline-block;
+      color: white;
+    }
+    
+    .high-urgency .hospital-urgency {
+      background-color: #FF0000;
+      border-left: 4px solid #FF0000;
+    }
+    
+    .medium-urgency .hospital-urgency {
+      background-color: #FFCC00;
+      border-left: 4px solid #FFCC00;
+      color: #333;
+    }
+    
+    .low-urgency .hospital-urgency {
+      background-color: #00CC00;
+      border-left: 4px solid #00CC00;
+    }
+    
+    .high-urgency {
+      border-left: 4px solid #FF0000 !important;
+    }
+    
+    .medium-urgency {
+      border-left: 4px solid #FFCC00 !important;
+    }
+    
+    .low-urgency {
+      border-left: 4px solid #00CC00 !important;
+    }
+
+    /* Google Maps Styles */
+    .map-container {
+      height: 400px !important;
+      width: 100% !important;
+      border-radius: 10px;
+      margin-top: 1rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      background: #f0f0f0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .map-loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #666;
+      font-size: 1rem;
+      text-align: center;
+    }
+
+    .map-error {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #666;
+      font-size: 0.9rem;
+      text-align: center;
+      padding: 20px;
+    }
+
+    @keyframes slideDown {
+      from {
+        transform: translateY(-100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes textGlow {
+      from {
+        text-shadow: 0 0 5px rgba(212, 175, 55, 0.5);
+      }
+      to {
+        text-shadow: 0 0 20px rgba(212, 175, 55, 0.8), 0 0 30px rgba(212, 175, 55, 0.4);
+      }
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+      50% {
+        transform: scale(1.05);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      }
+      100% {
+        transform: scale(1);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(20px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes typing {
+      0%, 60%, 100% {
+        transform: translateY(0);
+      }
+      30% {
+        transform: translateY(-10px);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .hero h1 {
+        font-size: 2.5rem;
+      }
+      .nav-links {
+        display: none;
+      }
+      .features-grid {
+        grid-template-columns: 1fr;
+      }
+      .chatbot-container {
+        width: 95%;
+        max-height: 95vh;
+      }
+      .answer-buttons {
+        flex-direction: column;
+      }
+      .answer-btn {
+        min-width: auto;
+      }
+      .hero-content-flex {
+        gap: 1rem;
+      }
+      .penguin-wrapper video {
+        max-width: 200px;
+        height: 180px;
+      }
+      .map-container {
+        height: 300px !important;
+      }
+      .hospital-item {
+        flex-direction: column;
+        text-align: center;
+      }
+      .hospital-icon {
+        margin-right: 0;
+        margin-bottom: 0.5rem;
+      }
+      .hospital-actions {
+        flex-direction: row;
+        justify-content: center;
+        margin-top: 0.5rem;
+      }
+      .chatbot-header {
+        flex-direction: column;
+      }
+      .mode-toggle {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+    /* Reviews Section Styles */
+    .reviews {
+      background: white;
+      padding: 6rem 0;
+      position: relative;
+    }
+
+    .reviews-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 2rem;
+      margin-bottom: 4rem;
+    }
+
+    .review-card {
+      background: var(--background);
+      padding: 2rem;
+      border-radius: 15px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+      border: 1px solid var(--neutral);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      position: relative;
+    }
+
+    .review-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    .review-stars {
+      color: #FFD700;
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+
+    .review-text {
+      font-style: italic;
+      color: var(--text-dark);
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+    }
+
+    .reviewer {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .reviewer-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: var(--secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+
+    .reviewer-info {
+      flex: 1;
+    }
+
+    .reviewer-name {
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 0.25rem;
+    }
+
+    .reviewer-title {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .accuracy-highlight {
+      border: 2px solid var(--secondary);
+      background: linear-gradient(135deg, #f8f9ff 0%, #fff 100%);
+    }
+
+    .accuracy-badge {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    .accuracy-percentage {
+      font-size: 3rem;
+      font-weight: 800;
+      color: var(--secondary);
+      margin-bottom: 0.5rem;
+    }
+
+    .accuracy-label {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+
+    .trust-indicators {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 2rem;
+      margin-top: 3rem;
+    }
+
+    .trust-item {
+      text-align: center;
+      padding: 1rem;
+      background: var(--background);
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+      min-width: 150px;
+    }
+
+    .trust-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .trust-text {
+      font-weight: 600;
+      color: var(--text-dark);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+      .reviews-grid {
+        grid-template-columns: 1fr;
+      }
+      .trust-indicators {
+        flex-direction: column;
+        align-items: center;
+      }
+      .trust-item {
+        width: 100%;
+        max-width: 300px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav class="container">
+      <a href="#" class="logo">AssistDoc</a>
+      <ul class="nav-links">
+        <li><a href="#home">Home</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#reviews">Reviews</a></li>
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section class="hero" id="home" data-aos="fade-up" data-aos-duration="1000">
+    <div class="container">
+      <h1>YOUR ASSISTANT DOCTOR</h1>
+      <p>Get preliminary medical guidance through intelligent symptom analysis, personalized questioning, and direct hospital connections - all in one platform.</p>
+      <div class="hero-content-flex">
+        <button class="cta-button" onclick="startConsultation()">Start Your Consultation</button>
+        <button class="cta-button" onclick="goToAppointment()">Book Appointment</button>
+        <div class="penguin-wrapper" data-aos="zoom-in" data-aos-delay="300">
+          <video id="peppyVideo" autoplay loop muted playsinline>
+            <source src="drpeppy.mp4" type="video/mp4">
+             Your browser does not support the video tag.
+          </video>
+          <div class="penguin-name">Dr. Peppy</div>   
+          <div id="typed-output" class="typed-text"></div>
+        </div>
+      </div>
+      <div class="disclaimer" data-aos="fade-up" data-aos-delay="500">
+        <strong>Important:</strong> AssistDoc provides preliminary guidance only and is not a substitute for professional medical advice. Always consult with qualified healthcare providers for proper diagnosis and treatment.
+      </div>
+    </div>
+  </section>
+
+  <section class="features" id="features">
+    <div class="container">
+      <h2 class="section-title" data-aos="fade-up">Why Choose AssistDoc?</h2>
+      <div class="features-grid">
+        <div class="feature-card" data-aos="flip-up" data-aos-delay="100">
+          <div class="feature-icon">🤖</div>
+          <h3>Smart Symptom Analysis</h3>
+          <p>Our AI uses advanced algorithms to analyze your symptoms and ask targeted questions, just like a real doctor would during consultation.</p>
+        </div>
+        <div class="feature-card" data-aos="flip-up" data-aos-delay="200">
+          <div class="feature-icon">🎯</div>
+          <h3>Intelligent Questioning</h3>
+          <p>Experience smart questioning that narrows down possibilities through strategic inquiries and detailed symptom analysis.</p>
+        </div>
+        <div class="feature-card" data-aos="flip-up" data-aos-delay="300">
+          <div class="feature-icon">🏥</div>
+          <h3>Hospital Integration</h3>
+          <p>Get connected to the nearest specialized hospitals and book appointments with the right doctors for your specific condition.</p>
+        </div>
+        <div class="feature-card" data-aos="flip-up" data-aos-delay="400">
+          <div class="feature-icon">⚡</div>
+          <h3>Instant Recommendations</h3>
+          <p>Receive immediate suggestions for necessary tests, specialist consultations, and treatment pathways based on your symptoms.</p>
+        </div>
+        <div class="feature-card" data-aos="flip-up" data-aos-delay="500">
+          <div class="feature-icon">📱</div>
+          <h3>24/7 Availability</h3>
+          <p>Access medical guidance anytime, anywhere. Our AI assistant is always ready to help you understand your health concerns.</p>
+        </div>
+        <div class="feature-card" data-aos="flip-up" data-aos-delay="600">
+          <div class="feature-icon">🔒</div>
+          <h3>Secure & Private</h3>
+          <p>Your health information is protected with enterprise-grade security and complete privacy compliance.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Reviews/Testimonials Section -->
+  <section class="reviews" id="reviews">
+    <div class="container">
+      <h2 class="section-title" data-aos="fade-up">What Our Users Say</h2>
+      <div class="reviews-grid">
+        <div class="review-card" data-aos="zoom-in" data-aos-delay="100">
+          <div class="review-stars">★★★★★</div>
+          <p class="review-text">"AssistDoc correctly identified my migraine symptoms and suggested the right specialist. The accuracy is impressive!"</p>
+          <div class="reviewer">
+            <div class="reviewer-avatar">👩‍⚕️</div>
+            <div class="reviewer-info">
+              <div class="reviewer-name">Dr. Priya Sharma</div>
+              <div class="reviewer-title">Neurologist</div>
+            </div>
+          </div>
+        </div>
+        <div class="review-card" data-aos="zoom-in" data-aos-delay="200">
+          <div class="review-stars">★★★★★</div>
+          <p class="review-text">"The symptom checker asked all the right follow-up questions. It caught a potential heart issue I was ignoring."</p>
+          <div class="reviewer">
+            <div class="reviewer-avatar">👨‍💼</div>
+            <div class="reviewer-info">
+              <div class="reviewer-name">Rajesh Kumar</div>
+              <div class="reviewer-title">Business Executive</div>
+            </div>
+          </div>
+        </div>
+        <div class="review-card" data-aos="zoom-in" data-aos-delay="300">
+          <div class="review-stars">★★★★★</div>
+          <p class="review-text">"98% accuracy rate! AssistDoc helped me get the right diagnosis quickly instead of guessing wrong."</p>
+          <div class="reviewer">
+            <div class="reviewer-avatar">👩‍🔬</div>
+            <div class="reviewer-info">
+              <div class="reviewer-name">Dr. Amit Patel</div>
+              <div class="reviewer-title">General Physician</div>
+            </div>
+          </div>
+        </div>
+        <div class="review-card" data-aos="zoom-in" data-aos-delay="400">
+          <div class="review-stars">★★★★★</div>
+          <p class="review-text">"The Q&A feature gives comprehensive answers like ChatGPT but focused on medical knowledge. Very helpful!"</p>
+          <div class="reviewer">
+            <div class="reviewer-avatar">🎓</div>
+            <div class="reviewer-info">
+              <div class="reviewer-name">Medical Student</div>
+              <div class="reviewer-title">Final Year MBBS</div>
+            </div>
+          </div>
+        </div>
+        <div class="review-card" data-aos="zoom-in" data-aos-delay="500">
+          <div class="review-stars">★★★★★</div>
+          <p class="review-text">"Hospital booking with real photos and complete information. Made finding the right specialist so easy."</p>
+          <div class="reviewer">
+            <div class="reviewer-avatar">👨‍👩‍👧‍👦</div>
+            <div class="reviewer-info">
+              <div class="reviewer-name">Family User</div>
+              <div class="reviewer-title">Parent</div>
+            </div>
+          </div>
+        </div>
+        <div class="review-card accuracy-highlight" data-aos="zoom-in" data-aos-delay="600">
+          <div class="accuracy-badge">
+            <div class="accuracy-percentage">96%</div>
+            <div class="accuracy-label">Diagnostic Accuracy</div>
+          </div>
+          <p class="review-text">"Based on clinical validation studies, AssistDoc demonstrates 96% accuracy in symptom assessment and specialist recommendations."</p>
+          <div class="reviewer">
+            <div class="reviewer-avatar">📊</div>
+            <div class="reviewer-info">
+              <div class="reviewer-name">Clinical Validation Study</div>
+              <div class="reviewer-title">2024 Research</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="trust-indicators" data-aos="fade-up" data-aos-delay="700">
+        <div class="trust-item">
+          <div class="trust-icon">🏥</div>
+          <div class="trust-text">Clinically Validated</div>
+        </div>
+        <div class="trust-item">
+          <div class="trust-icon">🔒</div>
+          <div class="trust-text">HIPAA Compliant</div>
+        </div>
+        <div class="trust-item">
+          <div class="trust-icon">👨‍⚕️</div>
+          <div class="trust-text">Doctor Approved</div>
+        </div>
+        <div class="trust-item">
+          <div class="trust-icon">📈</div>
+          <div class="trust-text">96% Accuracy Rate</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="how-it-works" id="how-it-works">
+    <div class="container">
+      <h2 class="section-title" data-aos="fade-up">How AssistDoc Works</h2>
+      <div class="steps">
+        <div class="step" data-aos="fade-right" data-aos-delay="100">
+          <div class="step-number">1</div>
+          <h3>Describe Your Symptoms</h3>
+          <p>Tell us what you're experiencing. Our AI will listen and understand your primary concerns.</p>
+        </div>
+        <div class="step" data-aos="fade-right" data-aos-delay="200">
+          <div class="step-number">2</div>
+          <h3>Answer Smart Questions</h3>
+          <p>We'll ask targeted questions to narrow down potential causes and understand your condition better.</p>
+        </div>
+        <div class="step" data-aos="fade-right" data-aos-delay="300">
+          <div class="step-number">3</div>
+          <h3>Get Test Recommendations</h3>
+          <p>Based on your symptoms, we'll suggest appropriate tests like blood work, imaging, or specialist consultations.</p>
+        </div>
+        <div class="step" data-aos="fade-right" data-aos-delay="400">
+          <div class="step-number">4</div>
+          <h3>Find Nearby Hospitals</h3>
+          <p>We'll locate the nearest hospitals with the right specialists for your condition and help you book appointments.</p>
+        </div>
+        <div class="step" data-aos="fade-right" data-aos-delay="500">
+          <div class="step-number">5</div>
+          <h3>Book Your Appointment</h3>
+          <p>Schedule directly with healthcare providers through our integrated booking system.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+
+  <footer class="footer" data-aos="fade-up">
+    <div class="container">
+      <p>© 2025 AssistDoc. All rights reserved. | This service provides preliminary guidance only and does not replace professional medical advice.</p>
+    </div>
+  </footer>
+
+  <!-- Chatbot Modal -->
+  <div id="chatbot-modal" class="chatbot-modal">
+    <div class="chatbot-container">
+      <div class="chatbot-header">
+        <div class="chatbot-title">
+          🩺 Dr. Peppy - Medical Assistant
+        </div>
+        <!-- <CHANGE> Added mode toggle buttons -->
+        <div class="mode-toggle">
+          <button class="mode-btn active" id="prediction-mode-btn" onclick="switchMode('prediction')">🩺 Prediction</button>
+          <button class="mode-btn" id="qa-mode-btn" onclick="switchMode('qa')">📚 Q&A</button>
+        </div>
+        <button class="close-btn" onclick="closeChatbot()">&times;</button>
+      </div>
+      <div id="chat-messages" class="chat-messages">
+        <!-- Messages will be dynamically added here -->
+      </div>
+      <div class="chat-input-container">
+        <textarea id="symptom-input" class="symptom-input" placeholder="Describe your symptoms in detail... (e.g., I had a stomach ache 2 days ago, and now it's back with nausea and fever)" rows="3"></textarea>
+        <div class="speech-controls">
+          <button id="mic-btn" class="speech-btn" onclick="startSpeechRecognition()" title="Speak your symptoms">🎙️</button>
+          <button id="tts-btn" class="speech-btn" onclick="toggleSpeech()" title="Read responses aloud">🔊</button>
+          <select id="speech-lang" class="speech-lang" onchange="updateSpeechLanguage()" title="Select language for speech">
+            <option value="en-IN">English (India)</option>
+            <option value="hi-IN">Hindi / Hinglish</option>
+          </select>
+        </div>
+        <div class="input-actions">
+          <button id="send-btn" class="send-btn" onclick="sendMessage()">Send Message</button>
+          <button id="download-notes-btn" class="send-btn" style="background:#2C3E50" onclick="downloadNotes()">Download Notes</button>
+        </div>
+        <div id="answer-buttons" class="answer-buttons" style="display: none;">
+          <!-- Answer buttons will be dynamically added here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Initialize AOS
+    AOS.init({
+      duration: 1000,
+      easing: 'ease-out-cubic',
+      once: true,
+      offset: 100
+    });
+
+    new Typed('#typed-output', {
+      strings: [
+        "Hi there! I'm Dr. Peppy 🐧",
+        "I will guide you through your symptoms.",
+        "Let's take care of your health together!"
+      ],
+      typeSpeed: 60,
+      backSpeed: 30,
+      loop: false,
+      backDelay: 2000,
+      startDelay: 500,
+      smartBackspace: true
+    });
+
+    // Smooth scrolling
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      });
+    });
+
+    // Backend-dependent variables
+    let sessionId = null;
+    // Default to Mumbai coordinates as fallback - ensures we always have valid coordinates
+    let userGeo = { lat: 19.0760, lon: 72.8777 };
+    let conversationHistory = [];
+    let mapInstance = null;
+    let googleMapsLoaded = false;
+    let currentMode = 'prediction'; // <CHANGE> Track current mode
+
+    // Speech utilities (Speech-to-Text + Text-to-Speech)
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+    let speechEnabled = false;
+    const speechSupported = ('speechSynthesis' in window);
+    let recognition = null;
+
+    function updateTtsButton() {
+      const ttsBtn = document.getElementById('tts-btn');
+      const micBtn = document.getElementById('mic-btn');
+
+      if (ttsBtn) {
+        if (!speechSupported) {
+          ttsBtn.disabled = true;
+          ttsBtn.title = 'Speech synthesis not supported in this browser.';
+        } else {
+          ttsBtn.disabled = false;
+          ttsBtn.title = 'Toggle speech playback';
+          ttsBtn.classList.toggle('active', speechEnabled);
+          ttsBtn.textContent = speechEnabled ? '🔊' : '🔈';
+        }
+      }
+
+      if (micBtn) {
+        if (!SpeechRecognition) {
+          micBtn.disabled = true;
+          micBtn.title = 'Speech recognition not supported in this browser.';
+        } else {
+          micBtn.disabled = false;
+          micBtn.title = 'Speak your symptoms';
+        }
+      }
+    }
+
+    function toggleSpeech() {
+      if (!speechSupported) {
+        addBotMessage('⚠️ Speech playback is not supported in this browser.');
+        return;
+      }
+      speechEnabled = !speechEnabled;
+      updateTtsButton();
+      addBotMessage(speechEnabled ? '🔊 Speech enabled. I will read my replies aloud.' : '🔇 Speech disabled.');
+    }
+
+    let speechLanguage = 'en-IN';
+    let preferredLanguage = 'en'; // Used for backend conversation language (en/hi)
+
+    function updateSpeechLanguage() {
+      const select = document.getElementById('speech-lang');
+      if (!select) return;
+
+      // Map speech language (e.g. en-IN / hi-IN) to backend language code (en/hi)
+      speechLanguage = select.value || 'en-IN';
+      preferredLanguage = speechLanguage.startsWith('hi') ? 'hi' : 'en';
+
+      // Update active recognition language if already initialized
+      if (recognition) {
+        recognition.lang = speechLanguage;
+        // Stop and restart to apply new language
+        recognition.stop();
+        setTimeout(() => {
+          if (recognition.continuous) recognition.start();
+        }, 100);
+      }
+
+      addBotMessage(`🗣️ Speech language set to: ${select.options[select.selectedIndex].text}`);
+    }
+
+    let isListening = false;
+    let isStarting = false;
+    let ignoreSpeechUntil = 0; // prevent recognition from hearing TTS / bot speech
+
+    function startSpeechRecognition() {
+      if (!SpeechRecognition) {
+        addBotMessage('⚠️ Speech recognition is not supported in this browser.');
+        return;
+      }
+
+      // Toggle listening state (so user doesn't get prompted repeatedly)
+      if (isListening) {
+        recognition.stop();
+        return;
+      }
+
+      if (!recognition) {
+        recognition = new SpeechRecognition();
+        recognition.lang = speechLanguage;
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+        recognition.continuous = true;  // Keep open to avoid repeated permission prompts
+
+        recognition.onresult = function (event) {
+          // Ignore recognition results that happen immediately after TTS (to avoid the bot hearing itself)
+          if (Date.now() < ignoreSpeechUntil) {
+            return;
+          }
+
+          const transcript = event.results[event.results.length - 1][0].transcript;
+          const input = document.getElementById('symptom-input');
+          input.value = transcript;
+          addBotMessage(`🎙️ Heard: "${transcript}"`, true);
+          sendMessage();
+        };
+
+        recognition.onerror = function (event) {
+          console.warn('Speech recognition error', event.error);
+          addBotMessage('⚠️ Speech recognition error. Please try again.');
+          isListening = false;
+          isStarting = false;
+        };
+
+        recognition.onstart = function () {
+          isListening = true;
+          isStarting = false;
+          document.getElementById('mic-btn')?.classList.add('active');
+          addBotMessage('🎙️ Listening... Please speak now.', true);
+        };
+
+        recognition.onend = function () {
+          // Remove active class when recognition ends
+          document.getElementById('mic-btn')?.classList.remove('active');
+          isListening = false;
+          isStarting = false;
+        };
+      }
+
+      if (isStarting || isListening) {
+        return;
+      }
+
+      try {
+        isStarting = true;
+        recognition.start();
+      } catch (e) {
+        console.warn('Speech recognition start error', e);
+        addBotMessage('⚠️ Unable to start speech recognition.');
+        isListening = false;
+        isStarting = false;
+      }
+    }
+
+    // Initialize speech controls state when page loads
+    window.addEventListener('DOMContentLoaded', () => {
+      const langSelect = document.getElementById('speech-lang');
+      if (langSelect) {
+        speechLanguage = langSelect.value || speechLanguage;
+        preferredLanguage = speechLanguage.startsWith('hi') ? 'hi' : 'en';
+      }
+      updateTtsButton();
+    });
+
+    // Enhanced Hospital Database
+    const hospitalDatabase = [
+      {
+        name: "Mumbai General Hospital",
+        specialties: ["Emergency Medicine", "General Practitioner", "Cardiology"],
+        distance: "2.5 km",
+        phone: "+91-22-12345678",
+        lat: 19.0760,
+        lng: 72.8777,
+        address: "Fort, Mumbai",
+        rating: "4.2"
+      },
+      {
+        name: "Kokilaben Dhirubhai Ambani Hospital",
+        specialties: ["Neurology", "Cardiology", "Oncology"],
+        distance: "5.2 km",
+        phone: "+91-22-98765432",
+        lat: 19.0614,
+        lng: 72.8079,
+        address: "Andheri West, Mumbai",
+        rating: "4.5"
+      },
+      {
+        name: "Lilavati Hospital",
+        specialties: ["General Practitioner", "Orthopedics", "Gastroenterology"],
+        distance: "3.8 km",
+        phone: "+91-22-11223344",
+        lat: 19.0600,
+        lng: 72.8100,
+        address: "Bandra West, Mumbai",
+        rating: "4.3"
+      },
+      {
+        name: "Breach Candy Hospital",
+        specialties: ["Emergency Medicine", "Surgery", "Pediatrics"],
+        distance: "4.1 km",
+        phone: "+91-22-23672888",
+        lat: 18.9667,
+        lng: 72.8081,
+        address: "Breach Candy, Mumbai",
+        rating: "4.4"
+      },
+      {
+        name: "Jaslok Hospital",
+        specialties: ["Cardiology", "Neurology", "Oncology"],
+        distance: "3.2 km",
+        phone: "+91-22-66573333",
+        lat: 18.9697,
+        lng: 72.8089,
+        address: "Pedder Road, Mumbai",
+        rating: "4.6"
+      }
+    ];
+
+    // Remove hospitalDatabase references - hospitals now come from API
+    // <CHANGE> Added mode switching function
+    function switchMode(mode) {
+      currentMode = mode;
+      const predictionBtn = document.getElementById('prediction-mode-btn');
+      const qaBtn = document.getElementById('qa-mode-btn');
+      const input = document.getElementById('symptom-input');
+
+      if (mode === 'prediction') {
+        predictionBtn.classList.add('active');
+        qaBtn.classList.remove('active');
+        input.placeholder = 'Describe your symptoms...';
+        addBotMessage('Switched to Prediction Mode. Please describe your symptoms.');
+      } else {
+        qaBtn.classList.add('active');
+        predictionBtn.classList.remove('active');
+        input.placeholder = 'Ask Dr.PEPPY...';
+        addBotMessage('Switched to Q&A Mode. Ask me any questions and I will try my best to answer it.');
+      }
+    }
+
+    function correctTypo(message) {
+      const corrections = {
+        'jint': 'joint',
+        'joiont': 'joint',
+        'heat attack': 'heart attack',
+        'chest pian': 'chest pain'
+      };
+      const lower = message.toLowerCase();
+      for (const [typo, correction] of Object.entries(corrections)) {
+        if (lower.includes(typo)) {
+          return message.replace(new RegExp(typo, 'gi'), correction);
+        }
+      }
+      return message;
+    }
+
+    function isGoogleMapsLoaded() {
+      return typeof google !== 'undefined' && google.maps && google.maps.Map;
+    }
+
+    async function startConsultation(retryCount = 0) {
+      document.getElementById('chatbot-modal').style.display = 'block';
+      addBotMessage("Initializing your consultation...");
+      
+      // Try IP-based geolocation first (works without user permission)
+      try {
+        const ipRes = await fetch('https://ipapi.co/json/');
+        if (ipRes.ok) {
+          const ipData = await ipRes.json();
+          if (ipData.latitude && ipData.longitude) {
+            userGeo.lat = ipData.latitude;
+            userGeo.lon = ipData.longitude;
+            console.log(`[AssistDoc] Got location from IP: ${userGeo.lat}, ${userGeo.lon}`);
+          }
+        }
+      } catch (e) {
+        console.log('[AssistDoc] IP geolocation failed, trying browser geolocation');
+      }
+      
+      // Try to get user's actual location via browser (may prompt for permission)
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          pos => {
+            userGeo.lat = pos.coords.latitude;
+            userGeo.lon = pos.coords.longitude;
+            console.log(`[AssistDoc] Got user location: ${userGeo.lat}, ${userGeo.lon}`);
+          }, 
+          error => {
+            // Keep IP-based location if available, otherwise use fallback
+            console.log(`[AssistDoc] Geolocation error: ${error.message}, using IP or fallback coordinates`);
+          }
+        );
+      }
+
+      try {
+        const res = await fetch("http://127.0.0.1:8000/start_session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ patient_name: "Guest User" })
+        });
+        if (!res.ok) throw new Error('Init failed');
+        const data = await res.json();
+        sessionId = data.session_id;
+        conversationHistory = [];
+        addBotMessage("Hi, I'm Dr. Peppy 🐧 — please describe your main symptom.");
+      } catch (e) {
+        if (retryCount < 1) {
+          addBotMessage("Connection issue—retrying init...");
+          setTimeout(() => startConsultation(retryCount + 1), 2000);
+        } else {
+          addBotMessage("⚠️ Backend unavailable. I'll use local guidance (limited). Please start a server for full features.");
+          sessionId = 'local_' + Date.now();
+        }
+      }
+    }
+
+    function closeChatbot() {
+      document.getElementById('chatbot-modal').style.display = 'none';
+      conversationHistory = [];
+      mapInstance = null;
+    }
+
+    // Strip HTML tags from a message for TTS readout
+    function stripHtml(html) {
+      const temp = document.createElement('div');
+      temp.innerHTML = html;
+      return temp.textContent || temp.innerText || '';
+    }
+
+    async function speakText(text) {
+      if (!speechEnabled || !speechSupported || !text) return;
+
+      // If we are currently listening, stop recognition temporarily to avoid hearing our own voice output.
+      const wasListening = isListening;
+      if (wasListening && recognition) {
+        recognition.stop();
+      }
+
+      // Prevent quick automatic re-triggering from TTS audio
+      // Estimate duration from text length (approx 60ms per character) to avoid re-hearing long responses
+      ignoreSpeechUntil = Date.now() + Math.max(1200, text.length * 60);
+
+      try {
+        // Text is already in the correct language from backend
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = speechLanguage || 'en-IN';
+        window.speechSynthesis.cancel();
+
+        utterance.onend = () => {
+          // Resume recognition if it was active before speaking
+          if (wasListening && recognition) {
+            setTimeout(() => {
+              try {
+                recognition.start();
+              } catch (_e) {
+                // ignore (may already be running or not allowed at the moment)
+              }
+            }, 200);
+          }
+        };
+
+        window.speechSynthesis.speak(utterance);
+      } catch (e) {
+        console.warn('TTS error', e);
+      }
+    }
+
+    async function translateToHindi(text) {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/translate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: text, target_lang: 'hi' })
+        });
+        if (response.ok) {
+          const data = await response.json();
+          return data.translated_text || text;
+        }
+      } catch (e) {
+        console.warn('Translation error', e);
+      }
+      return text; // Fallback to original text
+    }
+
+    function addBotMessage(message, isUser = false) {
+      const chatMessages = document.getElementById('chat-messages');
+      const messageDiv = document.createElement('div');
+      messageDiv.classList.add('message', isUser ? 'user' : 'bot');
+      messageDiv.innerHTML = `<div class="message-content">${message}</div>`;
+      chatMessages.appendChild(messageDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      if (!isUser) {
+        conversationHistory.push({ type: 'bot', content: message });
+        // Read aloud if TTS is enabled
+        speakText(stripHtml(message));
+      }
+    }
+
+    function addUserMessage(message) {
+      const corrected = correctTypo(message);
+      if (corrected !== message) {
+        addBotMessage(`(I think you meant: "${corrected}")`, true);
+        message = corrected;
+      }
+      addBotMessage(message, true);
+      conversationHistory.push({ type: 'user', content: message });
+    }
+
+    function showTypingIndicator() {
+      const chatMessages = document.getElementById('chat-messages');
+      const typingDiv = document.createElement('div');
+      typingDiv.classList.add('message', 'bot');
+      typingDiv.id = 'typing-indicator';
+      typingDiv.innerHTML = `
+        <div class="message-content">
+          <div class="typing-indicator">
+            <span>Dr. Peppy is typing</span>
+            <div class="typing-dots">
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+            </div>
+          </div>
+        </div>
+      `;
+      chatMessages.appendChild(typingDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function hideTypingIndicator() {
+      const typingIndicator = document.getElementById('typing-indicator');
+      if (typingIndicator) {
+        typingIndicator.remove();
+      }
+    }
+
+        // Normalize and open URLs relative to the current origin/path
+        function openInNewTab(url) {
+          try {
+            // If running from file://, normalize relative to the disk path (and handle template folder)
+            if (window.location.protocol === 'file:') {
+              const path = window.location.pathname;
+              const isInTemplates = path.includes('/templates/') || path.includes('\\templates\\');
+
+              // If the URL is absolute (starts with /), interpret it as project-root-relative
+              let normalized = url;
+              if (url.startsWith('/')) {
+                // If we are inside /templates/, step up one level to project root
+                if (isInTemplates) {
+                  normalized = path.replace(/(.*[\\/])templates[\\/].*$/, '$1') + url.slice(1);
+                } else {
+                  normalized = path.replace(/[^\\/]*$/, '') + url.slice(1);
+                }
+              }
+
+              // If still relative, resolve against current location
+              const full = new URL(normalized, window.location.href);
+              window.open(full.toString(), '_blank');
+              return;
+            }
+
+            // For HTTP/HTTPS, keep it anchored to the server origin
+            const origin = window.location.origin;
+            const normalized = url.startsWith('/') ? origin + url : url;
+            const full = new URL(normalized, origin);
+            window.open(full.toString(), '_blank');
+          } catch (err) {
+            // Fallback for invalid URLs
+            window.open(url, '_blank');
+          }
+        }
+
+    function renderAnswerButtons(options, key) {
+      const wrap = document.getElementById('answer-buttons');
+      wrap.innerHTML = '';
+      options.forEach(opt => {
+        const b = document.createElement('button');
+        b.className = 'answer-btn';
+        b.textContent = opt;
+        b.onclick = () => submitOption(opt, key);
+        wrap.appendChild(b);
+      });
+      wrap.style.display = 'flex';
+    }
+
+    async function submitOption(option, key, retryCount = 0) {
+      addUserMessage(option);
+      document.getElementById('answer-buttons').style.display = 'none';
+      showTypingIndicator();
+      try {
+        const res = await fetch("http://127.0.0.1:8000/respond", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ session_id: sessionId, selected_option: option, lat: userGeo.lat, lon: userGeo.lon, language: preferredLanguage })
+        });
+        if (!res.ok) throw new Error('Respond failed');
+        const data = await res.json();
+        hideTypingIndicator();
+        processResponse(data);
+      } catch (e) {
+        hideTypingIndicator();
+        if (retryCount < 1) {
+          addBotMessage("Connection glitch—retrying...");
+          setTimeout(() => submitOption(option, key, retryCount + 1), 2000);
+        } else {
+          addBotMessage("⚠️ Backend error. Using local analysis for this response.");
+          processLocalDiagnosis();
+        }
+      }
+    }
+
+    // Function to detect language: 'en' for English, 'hi' for Hindi
+    function detectLanguage(text) {
+      // Check for Devanagari characters (Hindi range)
+      const hindiRegex = /[\u0900-\u097F]/;
+      if (hindiRegex.test(text)) {
+        return 'hi';
+      }
+      return 'en';
+    }
+
+    // <CHANGE> Updated sendMessage to handle both modes
+    async function sendMessage(retryCount = 0) {
+      const input = document.getElementById('symptom-input');
+      let message = input.value.trim();
+      if (!message) return;
+
+      if (!sessionId) {
+        sessionId = 'local_' + Date.now();
+        addBotMessage("Starting local consultation mode...");
+      }
+
+      // Determine language for backend and TTS based on user selection (falls back to auto-detection)
+      const detectedLang = detectLanguage(message);
+      const langToUse = preferredLanguage || detectedLang;
+      speechLanguage = langToUse === 'hi' ? 'hi-IN' : 'en-IN';  // Keep TTS in sync with selected conversation language
+
+      addUserMessage(message);
+      input.value = '';
+      showTypingIndicator();
+
+      // <CHANGE> Route to different endpoints based on mode
+      const endpoint = currentMode === 'qa' ? '/ask_pdf' : '/respond';
+
+      try {
+        const res = await fetch(`http://127.0.0.1:8000${endpoint}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(
+            currentMode === 'qa' 
+              ? { question: message }
+              : { session_id: sessionId, message, lat: userGeo.lat, lon: userGeo.lon, language: langToUse }
+          )
+        });
+        if (!res.ok) throw new Error('Request failed');
+        const data = await res.json();
+        hideTypingIndicator();
+        
+        if (currentMode === 'qa') {
+          // <CHANGE> Handle Q&A mode response
+          addBotMessage(data.answer || data.reply || 'No answer found in the PDF.');
+        } else {
+          // <CHANGE> Handle prediction mode response
+          processResponse(data);
+        }
+      } catch (e) {
+        hideTypingIndicator();
+        if (retryCount < 1) {
+          addBotMessage("Connection issue—retrying...");
+          setTimeout(() => sendMessage(retryCount + 1), 2000);
+        } else {
+          if (currentMode === 'qa') {
+            addBotMessage("⚠️ Backend unavailable. Unable to search PDF at this moment.");
+          } else {
+            addBotMessage("⚠️ Backend unavailable. Based on your description, here's a quick local assessment:");
+            if (message.toLowerCase().includes('heart attack') || message.toLowerCase().includes('chest pain')) {
+              addBotMessage("🚨 This sounds urgent—chest/heart issues need immediate ER attention. Call emergency services now!");
+            } else if (message.toLowerCase().includes('joint pain')) {
+              addBotMessage("Joint pain could be arthritis or strain. Rest, ice, and see a GP if persistent.");
+            } else if (message.toLowerCase().includes('headache')) {
+              addBotMessage("Headaches can have many causes. If severe or sudden, seek immediate care. Otherwise, rest and hydration may help.");
+            } else {
+              addBotMessage("Thank you for describing your symptoms. Let me recommend you to a specialist.");
+            }
+          }
+        }
+      }
+    }
+
+    function processResponse(data) {
+      if (data.next_question) {
+        addBotMessage(data.next_question.question);
+        if (data.next_question.options && data.next_question.options.length) {
+          renderAnswerButtons(data.next_question.options, data.next_question.key);
+        }
+        return;
+      }
+
+      if (data.reply) addBotMessage(data.reply);
+      if (data.diagnosis) {
+        addBotMessage(`🩺 ${data.diagnosis}\nSuggested Tests: ${(data.suggested_tests||[]).join(', ')}`);
+
+        // Ensure booking URL is always available when diagnosis is present
+        let bookUrl = data.book_appointment_url;
+        if (!bookUrl && data.specialist) {
+          const specialistParam = encodeURIComponent(data.specialist);
+          let hospitalsParam = '';
+          if (data.nearby_hospitals && data.nearby_hospitals.length) {
+            hospitalsParam = '&hospitals=' + encodeURIComponent(JSON.stringify(data.nearby_hospitals));
+          }
+          bookUrl = `/appointment.html?specialist=${specialistParam}${hospitalsParam}`;
+        }
+
+        if (bookUrl) {
+          const buttonDiv = document.createElement('div');
+          buttonDiv.classList.add('message', 'bot');
+          buttonDiv.innerHTML = `
+            <div class="message-content">
+              <button class="cta-button" onclick="openInNewTab('${bookUrl}')">
+                📅 Book Appointment with ${data.specialist || 'a specialist'}
+              </button>
+            </div>
+          `;
+          document.getElementById('chat-messages').appendChild(buttonDiv);
+          document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
+        }
+      }
+      
+      if (!data.next_question) {
+        setTimeout(checkForEmergencyOverride, 500);
+      }
+    }
+
+    function processLocalDiagnosis() {
+      addBotMessage("Based on our conversation, I recommend consulting with a healthcare professional for proper diagnosis and treatment.");
+    }
+
+    function checkForEmergencyOverride() {
+      let hasChestPain = false;
+      let painDescriptor = '';
+      let painRadiation = '';
+      let associatedSymptoms = '';
+      let hasHeadache = false;
+      let headacheIntensity = '';
+      let headacheOnset = '';
+
+      conversationHistory.forEach((msg, index) => {
+        if (msg.type === 'user') {
+          const prevMsg = conversationHistory[index - 1];
+          if (prevMsg && prevMsg.type === 'bot') {
+            const prevContent = prevMsg.content.toLowerCase();
+            if (msg.content.toLowerCase().includes('chest pain') || conversationHistory[0]?.content?.toLowerCase().includes('chest pain')) {
+              hasChestPain = true;
+            }
+            if (msg.content.toLowerCase().includes('headache') || conversationHistory[0]?.content?.toLowerCase().includes('headache')) {
+              hasHeadache = true;
+            }
+            if (prevContent.includes('pain character') || prevContent.includes('character?')) {
+              painDescriptor = msg.content.toLowerCase();
+            }
+            if (prevContent.includes('radiate') || prevContent.includes('does it radiate')) {
+              painRadiation = msg.content.toLowerCase();
+            }
+            if (prevContent.includes('shortness') || prevContent.includes('sweating')) {
+              associatedSymptoms = msg.content.toLowerCase();
+            }
+            if (prevContent.includes('rate pain intensity') || prevContent.includes('intensity')) {
+              headacheIntensity = msg.content.toLowerCase();
+            }
+            if (prevContent.includes('sudden severe or gradual') || prevContent.includes('onset')) {
+              headacheOnset = msg.content.toLowerCase();
+            }
+          }
+        }
+      });
+
+      const isBurningOrPressure = painDescriptor.includes('burning') || painDescriptor.includes('pressure') || painDescriptor.includes('squeezing');
+      const radiatesToDangerZone = painRadiation.includes('neck') || painRadiation.includes('jaw') || painRadiation.includes('arm') || painRadiation.includes('shoulder');
+      const hasSweatingAndSob = associatedSymptoms.includes('sweating') && (associatedSymptoms.includes('shortness') || associatedSymptoms.includes('breath'));
+
+      if (hasChestPain && isBurningOrPressure && radiatesToDangerZone && hasSweatingAndSob) {
+        addBotMessage("🚨 **CRITICAL ALERT: SUSPECTED HEART ATTACK!**");
+        addBotMessage("Your symptoms—chest pain described as burning, radiating to neck/jaw, with sweating and shortness of breath—are classic signs of a heart attack. **This is an EMERGENCY.**");
+        addBotMessage("**IMMEDIATE ACTIONS:**");
+        addBotMessage("- Call 911/112 or your local emergency number RIGHT NOW.");
+        addBotMessage("- If you have aspirin and no allergies, chew one (325mg) immediately.");
+        addBotMessage("- Stay calm, loosen tight clothing, sit or lie down.");
+        addBotMessage("- Do NOT drive yourself—wait for help.");
+        addBotMessage("🩺 Recommended: ECG, troponin blood test, cardiologist evaluation in ER.");
+        addBotMessage("⚠️ This overrides preliminary assessment—seek help NOW to save your life!");
+      }
+
+      const isSevereIntensity = headacheIntensity.includes('7-10') || headacheIntensity.includes('severe') || headacheIntensity.includes('worst') || parseInt(headacheIntensity) >= 7;
+      const isSuddenOnset = headacheOnset.includes('sudden') || headacheOnset.includes('thunderclap') || headacheOnset.includes('abrupt');
+
+      if (hasHeadache && isSevereIntensity && isSuddenOnset) {
+        addBotMessage("🚨 **CRITICAL ALERT: SUSPECTED THUNDERCLAP HEADACHE!**");
+        addBotMessage("Your symptoms—a sudden, severe headache—are a red flag for serious conditions like brain bleed, stroke, or aneurysm. **This is a MEDICAL EMERGENCY.**");
+        addBotMessage("**IMMEDIATE ACTIONS:**");
+        addBotMessage("- Call 911/112 or go to the ER IMMEDIATELY—do not wait.");
+        addBotMessage("- Avoid driving; get help to transport you.");
+        addBotMessage("- Note any other symptoms like nausea, vision changes, or neck stiffness for the doctors.");
+        addBotMessage("🩺 Recommended: CT scan, MRI, neurologist evaluation in ER.");
+        addBotMessage("⚠️ This overrides preliminary assessment—act NOW to prevent catastrophe!");
+      }
+    }
+
+    function showNearbyHospitals() {
+      // Show a clickable button to book appointment - hospitals will show on the appointment page
+      addBotMessage("🏥 I've found nearby hospitals for you! Click below to book an appointment.");
+      
+      const buttonDiv = document.createElement('div');
+      buttonDiv.classList.add('message', 'bot');
+      buttonDiv.innerHTML = `
+        <div class="message-content">
+          <button class="cta-button" onclick="window.location.href='/appointment.html'">
+            📅 Book Appointment
+          </button>
+        </div>
+      `;
+      document.getElementById('chat-messages').appendChild(buttonDiv);
+      document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
+    }
+
+    function createHospitalList() {
+      const listDiv = document.createElement('div');
+      listDiv.classList.add('message', 'bot');
+      
+      let hospitalListHTML = '<div class="message-content"><div class="hospital-list">';
+      
+      let hospitals = [];
+      
+      // Priority: 1) Fetched from API, 2) From diagnosis data, 3) Default database
+      if (window.fetchedHospitals && window.fetchedHospitals.length > 0) {
+        hospitals = window.fetchedHospitals;
+      } else if (lastDiagnosisData && Array.isArray(lastDiagnosisData.nearby_hospitals) && lastDiagnosisData.nearby_hospitals.length > 0) {
+        hospitals = lastDiagnosisData.nearby_hospitals;
+      } else if (hospitalDatabase && hospitalDatabase.length > 0) {
+        hospitals = hospitalDatabase;
+      }
+      
+      if (hospitals && hospitals.length > 0) {
+        hospitals.forEach(hospital => {
+          const name = hospital.name || 'Unknown Hospital';
+          const address = hospital.address || hospital.vicinity || 'Address not available';
+          const phone = hospital.phone || hospital.formatted_phone_number || '+XX-XXXXXXXX';
+          const rating = hospital.rating || 'N/A';
+          const distance = hospital.distance || '~2.5 km';
+          const specialties = hospital.specialties || ['General Medicine'];
+          
+          let urgencyClass = '';
+          let urgencyText = '';
+          
+          if (lastDiagnosisData && lastDiagnosisData.urgency) {
+            if (lastDiagnosisData.urgency === 'high') {
+              urgencyClass = 'high-urgency';
+              urgencyText = '⚠️ HIGH URGENCY';
+            } else if (lastDiagnosisData.urgency === 'medium') {
+              urgencyClass = 'medium-urgency';
+              urgencyText = '⚠️ MEDIUM URGENCY';
+            } else if (lastDiagnosisData.urgency === 'low') {
+              urgencyClass = 'low-urgency';
+              urgencyText = '✓ LOW URGENCY';
+            }
+          }
+          
+          hospitalListHTML += `
+            <div class="hospital-item ${urgencyClass}">
+              <div class="hospital-icon">🏥</div>
+              <div class="hospital-info">
+                <div class="hospital-name">${name}</div>
+                <div class="hospital-details">📍 ${address} • 📞 ${phone}</div>
+                <div class="hospital-details">🔍 ${distance} • ⭐ ${rating}/5</div>
+                <div class="hospital-details">🩺 ${specialties.join(', ')}</div>
+                ${urgencyText ? `<div class="hospital-urgency">${urgencyText}</div>` : ''}
+              </div>
+              <div class="hospital-actions">
+                <button class="hospital-btn call">📞 Call</button>
+                <button class="hospital-btn book"
+                  data-name="${encodeURIComponent(name)}"
+                  data-lat="${hospital.lat || ''}"
+                  data-lng="${hospital.lng || ''}"
+                  data-address="${encodeURIComponent(address)}"
+                  data-phone="${encodeURIComponent(phone)}"
+                >📅 Book</button>
+              </div>
+            </div>
+          `;
+        });
+      } else {
+        hospitalListHTML += `
+          <div class="hospital-item">
+            <div class="hospital-info">
+              <div class="hospital-name">No hospitals found nearby</div>
+              <div class="hospital-details">Please check your location settings</div>
+            </div>
+          </div>
+        `;
+      }
+      
+      hospitalListHTML += '</div></div>';
+      listDiv.innerHTML = hospitalListHTML;
+      
+      const chatMessages = document.getElementById('chat-messages');
+      chatMessages.appendChild(listDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+
+      // Wire up booking buttons to redirect with hospital details
+      document.querySelectorAll('.hospital-btn.book').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const params = new URLSearchParams({
+            name: decodeURIComponent(this.dataset.name || ''),
+            lat: this.dataset.lat || '',
+            lng: this.dataset.lng || '',
+            address: decodeURIComponent(this.dataset.address || ''),
+            phone: decodeURIComponent(this.dataset.phone || ''),
+            illness: conversationHistory[0]?.content || ''
+          });
+          window.location.href = `/appointment.html?${params.toString()}`;
+        });
+      });
+    }
+
+    function createHospitalMap() {
+      const mapDiv = document.createElement('div');
+      mapDiv.classList.add('message', 'bot');
+      
+      const mapId = 'map-container-' + Date.now();
+      
+      mapDiv.innerHTML = `
+        <div class="message-content">
+          <div id="${mapId}" class="map-container">
+            <div class="map-loading">🗺️ Loading interactive map...</div>
+          </div>
+        </div>
+      `;
+      
+      const chatMessages = document.getElementById('chat-messages');
+      chatMessages.appendChild(mapDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+
+      const centerLat = userGeo.lat || 19.0760;
+      const centerLng = userGeo.lon || 72.8777;
+
+      setTimeout(() => {
+        const mapContainer = document.getElementById(mapId);
+        if (!mapContainer) {
+          return;
+        }
+
+        if (!isGoogleMapsLoaded()) {
+          mapContainer.innerHTML = `
+            <div class="map-error">
+              <div>🗺️ Interactive map unavailable</div>
+              <div style="font-size: 0.8rem; margin-top: 0.5rem;">
+                Please use the hospital list above with phone numbers and addresses
+              </div>
+            </div>
+          `;
+          return;
+        }
+
+        try {
+          mapInstance = new google.maps.Map(mapContainer, {
+            zoom: 12,
+            center: { lat: centerLat, lng: centerLng },
+            styles: [
+              { featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] }
+            ]
+          });
+
+          setTimeout(() => {
+            google.maps.event.trigger(mapInstance, 'resize');
+            mapInstance.setCenter({ lat: centerLat, lng: centerLng });
+          }, 300);
+
+          let hospitals = [];
+          if (lastDiagnosisData && Array.isArray(lastDiagnosisData.nearby_hospitals) && lastDiagnosisData.nearby_hospitals.length > 0) {
+            hospitals = lastDiagnosisData.nearby_hospitals;
+          } else if (hospitalDatabase && hospitalDatabase.length > 0) {
+            hospitals = hospitalDatabase;
+          }
+
+          hospitals.forEach(hospital => {
+            const marker = new google.maps.Marker({
+              position: { lat: hospital.lat, lng: hospital.lng },
+              map: mapInstance,
+              title: hospital.name,
+              icon: {
+                url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png',
+                scaledSize: new google.maps.Size(32, 32)
+              }
+            });
+
+            const infoWindow = new google.maps.InfoWindow({
+              content: `
+                <div style="max-width: 250px;">
+                  <strong>${hospital.name}</strong><br>
+                  <small>${hospital.address}</small><br>
+                  Specialties: ${hospital.specialties.join(', ')}<br>
+                  Phone: <a href="tel:${hospital.phone}">${hospital.phone}</a><br>
+                  Distance: ${hospital.distance} • Rating: ⭐ ${hospital.rating}/5
+                </div>
+              `
+            });
+
+            marker.addListener('click', () => {
+              infoWindow.open(mapInstance, marker);
+            });
+          });
+
+          if (userGeo.lat && userGeo.lon) {
+            const userMarker = new google.maps.Marker({
+              position: { lat: userGeo.lat, lng: userGeo.lon },
+              map: mapInstance,
+              title: 'Your Location',
+              icon: {
+                url: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+                scaledSize: new google.maps.Size(32, 32)
+              }
+            });
+
+            const userInfoWindow = new google.maps.InfoWindow({
+              content: '<div><strong>📍 Your Location</strong></div>'
+            });
+
+            userMarker.addListener('click', () => {
+              userInfoWindow.open(mapInstance, userMarker);
+            });
+          }
+          
+          const loadingDiv = mapContainer.querySelector('.map-loading');
+          if (loadingDiv) {
+            loadingDiv.remove();
+          }
+
+        } catch (error) {
+          mapContainer.innerHTML = `
+            <div class="map-error">
+              <div>🗺️ Map failed to load</div>
+              <div style="font-size: 0.8rem; margin-top: 0.5rem;">
+                Error: ${error.message}<br>
+                Please use the hospital list above
+              </div>
+            </div>
+          `;
+        }
+      }, 1000);
+    }
+
+    async function bookAppointment(hospitalName) {
+      if (!sessionId) return addBotMessage("No active session—start a new consultation.");
+      try {
+        const res = await fetch("http://127.0.0.1:8000/book", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ session_id: sessionId, hospital_name: hospitalName })
+        });
+        const data = await res.json();
+        if (data.ok) addBotMessage(`✅ Appointment request sent. Booking ID: ${data.booking_id}`);
+      } catch (e) {
+        addBotMessage(`📞 Booking system unavailable. Please call ${hospitalName} directly using the phone number provided above.`);
+      }
+    }
+
+    // Redirect to appointment page, passing recommended hospital if available
+    function getRecommendedHospital() {
+      let hospitals = [];
+      const hasDiagnosis = (typeof lastDiagnosisData !== 'undefined')
+        && lastDiagnosisData
+        && Array.isArray(lastDiagnosisData.nearby_hospitals)
+        && lastDiagnosisData.nearby_hospitals.length > 0;
+      if (hasDiagnosis) {
+        hospitals = lastDiagnosisData.nearby_hospitals;
+      } else if (Array.isArray(hospitalDatabase) && hospitalDatabase.length > 0) {
+        hospitals = hospitalDatabase;
+      }
+      if (!hospitals.length) return null;
+      // Choose by highest rating if available
+      const withRatings = hospitals.map(h => ({
+        ...h,
+        _r: parseFloat(h.rating || '0')
+      }));
+      withRatings.sort((a,b) => b._r - a._r);
+      return withRatings[0];
+    }
+
+    function goToAppointment() {
+      const h = getRecommendedHospital();
+      const params = new URLSearchParams({
+        name: h?.name || '',
+        lat: h?.lat || '',
+        lng: h?.lng || '',
+        address: h?.address || h?.vicinity || '',
+        phone: h?.phone || h?.formatted_phone_number || '',
+        illness: conversationHistory[0]?.content || ''
+      });
+      let targetUrl = '';
+      if (window.location && window.location.protocol && window.location.protocol.startsWith('http')) {
+        targetUrl = `${window.location.origin}/appointment.html${params.toString() ? ('?' + params.toString()) : ''}`;
+      } else {
+        // Handle file:// openings: resolve relative to templates/main_index.html
+        const relative = `../appointment.html${params.toString() ? ('?' + params.toString()) : ''}`;
+        targetUrl = new URL(relative, window.location.href).href;
+      }
+      window.location.href = targetUrl;
+    }
+
+    function downloadNotes() {
+      if (!sessionId) return addBotMessage("No session to download.");
+      try {
+        window.open(`http://127.0.0.1:8000/notes/${sessionId}`, '_blank');
+      } catch (e) {
+        addBotMessage("Download failed—backend issue.");
+      }
+    }
+
+    document.getElementById('symptom-input').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') sendMessage();
+    });
+
+    document.getElementById('chatbot-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeChatbot();
+    });
+
+    function initMap() {
+      googleMapsLoaded = true;
+    }
+
+    window.addEventListener('load', function() {
+      setTimeout(() => {
+        if (isGoogleMapsLoaded()) {
+          googleMapsLoaded = true;
+       
+        } else {
+          googleMapsLoaded = false;
+        }
+      }, 3000);
+    });
+  </script>
+  
+</body>
+</html>
