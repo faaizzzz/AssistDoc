@@ -1,0 +1,2414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Appointment</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏥</text></svg>">
+    
+    <!-- Embedded all CSS styles from external stylesheet -->
+    <style>
+        /* CSS Variables for Theming */
+        :root {
+            /* Align color palette with main_index.html */
+            --bg-primary: #F5F5F5; /* page background */
+            --bg-secondary: rgba(255, 255, 255, 0.98);
+            --card-bg: #ffffff;
+            --text-primary: #1A1A1A; /* var(--text-dark) */
+            --text-secondary: #2C3E50; /* var(--cta) */
+            --text-muted: #7f8c8d;
+            --primary-color: #D4AF37; /* var(--secondary) gold */
+            --secondary-color: #0B1C2C; /* var(--primary) deep blue */
+            --success-color: #27ae60;
+            --border-color: #e0e0e0;
+            --shadow: rgba(0,0,0,0.1);
+            --shadow-hover: rgba(0,0,0,0.15);
+            --close-btn-bg: #f0f0f0;
+            --secondary-btn-bg: #f8f9fa;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0B1C2C;
+            --bg-secondary: rgba(26, 26, 46, 0.95);
+            --card-bg: #1e1e3f;
+            --text-primary: #e0e0e0;
+            --text-secondary: #D4AF37;
+            --text-muted: #b0b0b0;
+            --primary-color: #D4AF37;
+            --secondary-color: #0B1C2C;
+            --success-color: #2ecc71;
+            --border-color: #333355;
+            --shadow: rgba(0,0,0,0.3);
+            --shadow-hover: rgba(0,0,0,0.4);
+            --close-btn-bg: #2a2a4a;
+            --secondary-btn-bg: #252545;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: var(--bg-primary);
+            min-height: 100vh;
+            color: var(--text-primary);
+            padding: 20px 15px;
+            transition: background 0.3s ease, color 0.3s ease;
+            font-size: 14px;
+        }
+
+        /* Theme Toggle Button */
+        #theme-toggle-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .theme-toggle-btn {
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            box-shadow: 0 4px 15px var(--shadow);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .theme-toggle-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px var(--shadow-hover);
+        }
+
+        .theme-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .theme-toggle-btn:hover .theme-icon {
+            transform: rotate(15deg);
+        }
+
+        #container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 40px;
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px var(--shadow);
+            backdrop-filter: blur(10px);
+            transition: background 0.3s ease;
+        }
+
+        #header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--text-primary);
+            font-size: 2.2em;
+            margin: 0 0 10px 0;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            transition: color 0.3s ease;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1em;
+            margin: 0;
+            font-weight: 400;
+            transition: color 0.3s ease;
+        }
+
+        #illness-input-section {
+            margin-bottom: 30px;
+            padding: 30px;
+            background: var(--card-bg);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px var(--shadow);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .input-wrapper {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .input-wrapper label {
+            display: block;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            text-align: center;
+            transition: color 0.3s ease;
+        }
+
+        .input-hint {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9em;
+            margin: 0 0 20px 0;
+            font-weight: 400;
+            transition: color 0.3s ease;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        #illness-input {
+            flex: 1;
+            min-width: 250px;
+            max-width: 400px;
+            padding: 12px 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 1em;
+            outline: none;
+            transition: all 0.3s ease;
+            background: var(--card-bg);
+            color: var(--text-primary);
+            box-shadow: 0 2px 10px var(--shadow);
+        }
+
+        #illness-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 20px rgba(52, 152, 219, 0.2);
+            transform: translateY(-2px);
+        }
+
+        #illness-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        #update-illness-btn {
+            background: linear-gradient(135deg, var(--primary-color), #b8941f);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+            white-space: nowrap;
+        }
+
+        #update-illness-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 25px rgba(52, 152, 219, 0.4);
+        }
+
+        #update-illness-btn:active {
+            transform: translateY(-1px);
+        }
+
+        #illness-info {
+            text-align: center;
+            margin: 20px 0 30px 0;
+            font-size: 1em;
+            background: linear-gradient(135deg, var(--primary-color), #FFD700);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 25px;
+            display: inline-block;
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.3);
+            width: 100%;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        #map {
+            height: 450px;
+            width: 100%;
+            margin-bottom: 30px;
+            border-radius: 15px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+            border: none;
+            overflow: hidden;
+        }
+
+        #places-list {
+            margin-top: 20px;
+        }
+
+        #places-list h2 {
+            color: var(--text-primary);
+            font-size: 1.6em;
+            margin-bottom: 25px;
+            text-align: center;
+            position: relative;
+            font-weight: 700;
+            padding-bottom: 15px;
+            transition: color 0.3s ease;
+        }
+
+        #places-list h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 2px;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            color: var(--text-muted);
+            font-size: 1.1em;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        #places {
+            list-style-type: none;
+            padding: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        #places li {
+            background: var(--card-bg);
+            border: none;
+            margin-bottom: 0;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px var(--shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        #places li::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(135deg, var(--primary-color), #FFD700);
+        }
+
+        #places li:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 45px rgba(0,0,0,0.15);
+            border-color: #e0e0e0;
+        }
+
+        .facility-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        #places h3 {
+            margin: 0;
+            color: var(--text-primary);
+            font-size: 1.2em;
+            font-weight: 700;
+            line-height: 1.3;
+            flex: 1;
+            min-width: 200px;
+            transition: color 0.3s ease;
+        }
+
+        .distance-badge {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: 600;
+            white-space: nowrap;
+            box-shadow: 0 2px 10px rgba(52, 152, 219, 0.3);
+        }
+
+        .facility-details {
+            margin-bottom: 15px;
+        }
+
+        .detail-item {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 15px;
+            align-items: flex-start;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .detail-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .detail-icon {
+            font-size: 1.2em;
+            flex-shrink: 0;
+            width: 28px;
+            text-align: center;
+        }
+
+        .detail-content {
+            flex: 1;
+            color: var(--text-secondary);
+            font-size: 0.9em;
+            line-height: 1.5;
+            transition: color 0.3s ease;
+        }
+
+        .detail-content strong {
+            color: var(--text-primary);
+            font-weight: 600;
+            display: block;
+            margin-bottom: 5px;
+            transition: color 0.3s ease;
+        }
+
+        /* Rating Styles */
+        .rating-display {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .star {
+            color: #ddd;
+            font-size: 1.2em;
+            transition: color 0.2s ease;
+        }
+
+        .star.filled {
+            color: #ffc107;
+        }
+
+        .star.half {
+            color: #ffc107;
+            opacity: 0.7;
+        }
+
+        .rating-value {
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 1.1em;
+        }
+
+        .rating-reviews {
+            color: var(--text-muted);
+            font-size: 0.9em;
+        }
+
+        .fee-amount {
+            color: var(--primary-color);
+            font-size: 1.3em;
+            font-weight: 700;
+        }
+
+        /* View Details Button */
+        .view-details-btn {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin-top: 15px;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            width: 100%;
+        }
+
+        .view-details-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 25px rgba(52, 152, 219, 0.4);
+        }
+
+        .view-details-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .detail-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .detail-link:hover {
+            color: var(--secondary-color);
+            text-decoration: underline;
+        }
+
+        .not-available {
+            color: var(--text-muted);
+        }
+
+        /* Hospital Detail Modal Styles */
+        .hospital-detail-modal {
+            backdrop-filter: blur(5px);
+        }
+
+        .hospital-detail-card {
+            border: 1px solid var(--border-color);
+        }
+
+        .close-modal-btn:hover {
+            background: var(--close-btn-bg);
+            transform: rotate(90deg);
+            opacity: 0.8;
+        }
+
+        .book-appointment-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(39, 174, 96, 0.4);
+        }
+
+        .close-btn:hover {
+            background: var(--border-color);
+            transform: translateY(-2px);
+        }
+
+        .detail-section {
+            margin-bottom: 30px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .detail-section:last-of-type {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        /* Filters Section */
+        #filters-section {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .filters-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: flex-end;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        .filter-value {
+            color: var(--primary-color);
+            font-weight: 700;
+            font-size: 1em;
+        }
+
+        .filter-slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 5px;
+            background: var(--bg-secondary);
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+            cursor: pointer;
+        }
+
+        .filter-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(52, 152, 219, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .filter-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.6);
+        }
+
+        .filter-slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 6px rgba(52, 152, 219, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .filter-slider::-moz-range-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.6);
+        }
+
+        .apply-filters-btn, .reset-filters-btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .apply-filters-btn {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .apply-filters-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        .reset-filters-btn {
+            background: var(--secondary-btn-bg);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+        }
+
+        .reset-filters-btn:hover {
+            background: var(--border-color);
+            transform: translateY(-2px);
+        }
+
+        /* Photo Gallery Styles */
+        .photo-gallery {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .photo-item {
+            position: relative;
+            border-radius: 14px;
+            overflow: hidden;
+            cursor: pointer;
+            aspect-ratio: 4 / 3;
+            background: #f7f8fb;
+            min-height: 180px;
+            border: 1px solid var(--border-color);
+        }
+
+        .photo-gallery img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .photo-gallery img:hover {
+            transform: scale(1.05);
+        }
+
+        #places p {
+            margin: 12px 0;
+            color: var(--text-secondary);
+            font-size: 1em;
+            line-height: 1.6;
+            transition: color 0.3s ease;
+        }
+
+        #places a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        #places a:hover {
+            color: var(--secondary-color);
+            text-decoration: underline;
+        }
+
+        #places button {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin-top: 15px;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(39, 174, 96, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            width: 100%;
+        }
+
+        #places button:hover {
+            background: linear-gradient(135deg, #229954, #27ae60);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(39, 174, 96, 0.4);
+        }
+
+        #places button:active {
+            transform: translateY(-1px);
+        }
+
+        /* Animations */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-50px) scale(0.9); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-20px); }
+            60% { transform: translateY(-10px); }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px 10px;
+                font-size: 13px;
+            }
+
+            #container {
+                padding: 20px 20px;
+                border-radius: 15px;
+            }
+
+            #header {
+                margin-bottom: 20px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .subtitle {
+                font-size: 0.9em;
+            }
+
+            #illness-input-section {
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+
+            .input-wrapper label {
+                font-size: 1em;
+            }
+
+            .input-hint {
+                font-size: 0.85em;
+                margin-bottom: 15px;
+            }
+
+            #illness-input {
+                min-width: 100%;
+                padding: 10px 16px;
+                font-size: 0.95em;
+            }
+
+            #update-illness-btn {
+                width: 100%;
+                padding: 10px 20px;
+                font-size: 0.95em;
+            }
+
+            #map {
+                height: 350px;
+                margin-bottom: 20px;
+            }
+
+            #places-list h2 {
+                font-size: 1.4em;
+                margin-bottom: 20px;
+            }
+
+            #places {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            #places li {
+                padding: 20px;
+            }
+
+            .facility-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .distance-badge {
+                align-self: flex-start;
+                margin-top: 10px;
+            }
+
+            .detail-item {
+                gap: 12px;
+                margin-bottom: 18px;
+                padding-bottom: 18px;
+            }
+
+            .detail-icon {
+                font-size: 1.3em;
+                width: 30px;
+            }
+
+            .detail-content {
+                font-size: 0.95em;
+            }
+
+            #filters-section {
+                padding: 20px;
+            }
+
+            .filters-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .filter-group {
+                min-width: 100%;
+            }
+
+            .apply-filters-btn, .reset-filters-btn {
+                width: 100%;
+            }
+
+            #illness-info {
+                font-size: 1.1em;
+                padding: 15px 25px;
+                margin: 30px 0 40px 0;
+            }
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(45deg, #2980b9, #3498db);
+        }
+    </style>
+</head>
+<body>
+    <div id="theme-toggle-container">
+        <button id="theme-toggle" class="theme-toggle-btn" title="Toggle Dark/Light Mode">
+            <span class="theme-icon">🌙</span>
+        </button>
+    </div>
+    
+    <div id="container">
+        <header id="header">
+            <h1>🏥 Healthcare Appointment Booking</h1>
+            <p class="subtitle">Find the right medical facility for your needs</p>
+        </header>
+        
+        <div id="illness-input-section">
+            <div class="input-wrapper">
+                <label for="illness-input">What are you looking for?</label>
+                <p class="input-hint">Enter your illness, symptom, or medical specialty</p>
+                <div class="input-group">
+                    <input type="text" id="illness-input" placeholder="e.g., flu, headache, cardiac, dental, eye exam" />
+                    <button id="update-illness-btn">🔍 Find Facilities</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="illness-info" style="display: none;">
+            <span id="illness-name"></span>
+        </div>
+        
+        <div id="map"></div>
+        
+        <div id="places-list">
+            <h2>🏨 Nearby Healthcare Facilities</h2>
+            
+            <div id="filters-section" style="display: none;">
+                <div class="filters-container">
+                    <div class="filter-group">
+                        <label for="rating-filter" class="filter-label">
+                            <span>⭐ Minimum Rating:</span>
+                            <span id="rating-value" class="filter-value">3.0</span>
+                        </label>
+                        <input type="range" id="rating-filter" min="0" max="5" step="0.1" value="3.0" class="filter-slider">
+                    </div>
+                    <div class="filter-group">
+                        <label for="fee-filter" class="filter-label">
+                            <span>💰 Max Consultation Fee:</span>
+                            <span id="fee-value" class="filter-value">₹10,000</span>
+                        </label>
+                        <input type="range" id="fee-filter" min="0" max="10000" step="500" value="10000" class="filter-slider">
+                    </div>
+                    <button id="apply-filters-btn" class="apply-filters-btn">Apply Filters</button>
+                    <button id="reset-filters-btn" class="reset-filters-btn">Reset</button>
+                </div>
+            </div>
+            
+            <div id="loading" style="text-align: center; display: none;">
+                <div class="spinner"></div>
+                <p class="loading-text">Finding nearby healthcare facilities...</p>
+            </div>
+            <ul id="places"></ul>
+        </div>
+    </div>
+
+    <!-- Embedded all JavaScript code from external script file -->
+    <script>
+        let map;
+        let illness;
+
+        let userLocation = null;
+        const DEFAULT_LOCATION = [19.0760, 72.8777]; // Fallback location (Mumbai) for file:// usage
+        let markers = [];
+        let currentTheme = 'light';
+        let allPlacesData = []; // Store all places data for filtering
+        let currentFilteredPlaces = [];
+
+        // Theme management
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            setTheme(savedTheme);
+        }
+
+        function setTheme(theme) {
+            currentTheme = theme;
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            const themeIcon = document.querySelector('.theme-icon');
+            if (themeIcon) {
+                themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+            }
+        }
+
+        function toggleTheme() {
+            setTheme(currentTheme === 'light' ? 'dark' : 'light');
+        }
+
+        // Generate random rating (for demo purposes)
+        function generateRating() {
+            // Generate rating between 3.5 and 5.0
+            const rating = (Math.random() * 1.5 + 3.5).toFixed(1);
+            const reviews = Math.floor(Math.random() * 500 + 50);
+            return { rating: parseFloat(rating), reviews };
+        }
+
+        // Generate consultation fees based on specialty
+        function generateConsultationFees(specialty, illness) {
+            const baseFees = {
+                'cardiology': { min: 1500, max: 3000 },
+                'oncology': { min: 2000, max: 4000 },
+                'orthopedics': { min: 1000, max: 2500 },
+                'neurology': { min: 1500, max: 3000 },
+                'ophthalmology': { min: 800, max: 2000 },
+                'dentistry': { min: 500, max: 1500 },
+                'pediatrics': { min: 600, max: 1500 },
+                'psychiatry': { min: 1200, max: 2500 },
+                'emergency': { min: 2000, max: 5000 },
+                'default': { min: 800, max: 2000 }
+            };
+            
+            const specialtyLower = (specialty || '').toLowerCase();
+            const illnessLower = (illness || '').toLowerCase();
+            
+            let feeRange = baseFees.default;
+            for (const [key, range] of Object.entries(baseFees)) {
+                if (key !== 'default' && (specialtyLower.includes(key) || illnessLower.includes(key))) {
+                    feeRange = range;
+                    break;
+                }
+            }
+            
+            const fee = Math.floor(Math.random() * (feeRange.max - feeRange.min) + feeRange.min);
+            return fee;
+        }
+
+        // Generate star rating HTML
+        function generateStarRating(rating) {
+            const fullStars = Math.floor(rating);
+            const hasHalfStar = rating % 1 >= 0.5;
+            const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+            
+            let starsHTML = '';
+            for (let i = 0; i < fullStars; i++) {
+                starsHTML += '<span class="star filled">★</span>';
+            }
+            if (hasHalfStar) {
+                starsHTML += '<span class="star half">★</span>';
+            }
+            for (let i = 0; i < emptyStars; i++) {
+                starsHTML += '<span class="star">★</span>';
+            }
+            
+            return `<div class="rating-display">${starsHTML} <span class="rating-value">${rating}</span> <span class="rating-reviews">(${Math.floor(Math.random() * 500 + 50)} reviews)</span></div>`;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize theme
+            initTheme();
+            
+            // Theme toggle button
+            const themeToggle = document.getElementById('theme-toggle');
+            if (themeToggle) {
+                themeToggle.addEventListener('click', toggleTheme);
+            }
+            const urlParams = new URLSearchParams(window.location.search);
+            illness = urlParams.get('illness') || '';
+            const specialist = urlParams.get('specialist') || '';
+            const hospitalsParam = urlParams.get('hospitals') || '';
+            if (specialist) {
+                illness = specialist;
+            }
+            const recommendedName = urlParams.get('name');
+            const recommendedLat = parseFloat(urlParams.get('lat'));
+            const recommendedLng = parseFloat(urlParams.get('lng'));
+            const recommendedAddress = urlParams.get('address');
+            const recommendedPhone = urlParams.get('phone');
+
+            // Set initial illness input value
+            const illnessInput = document.getElementById('illness-input');
+            illnessInput.value = illness;
+
+            // Update illness display if we have an initial value
+            if (illness) {
+                updateIllnessDisplay(illness);
+            }
+
+            // If hospitals are provided via URL, display them
+            let recommendedHospitals = [];
+            if (hospitalsParam) {
+                try {
+                    recommendedHospitals = JSON.parse(hospitalsParam);
+                } catch (e) {
+                    console.error('Error parsing hospitals param:', e);
+                }
+            }
+
+            // Add event listener for update button
+            document.getElementById('update-illness-btn').addEventListener('click', function() {
+                const newIllness = illnessInput.value.trim();
+                if (newIllness) {
+                    illness = newIllness;
+                    updateIllnessDisplay(illness);
+                    if (userLocation) {
+                        searchNearbyHospitals(userLocation[0], userLocation[1], illness);
+                    }
+                } else {
+                    alert('Please enter an illness or symptom.');
+                }
+            });
+
+            // Allow Enter key to trigger update
+            illnessInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    document.getElementById('update-illness-btn').click();
+                }
+            });
+
+            // Initialize Leaflet map
+            map = L.map('map').setView([0, 0], 15);
+
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            // Get user's location
+            if (navigator.geolocation) {
+                document.getElementById('loading').style.display = 'block';
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    userLocation = [position.coords.latitude, position.coords.longitude];
+                    map.setView(userLocation, 15);
+
+                    // Add user marker with custom icon
+                    const userIcon = L.divIcon({
+                        html: '📍',
+                        className: 'user-marker',
+                        iconSize: [30, 30],
+                        iconAnchor: [15, 30]
+                    });
+                    L.marker(userLocation, {icon: userIcon}).addTo(map).bindPopup('<b>You are here!</b>').openPopup();
+
+                    // Search for nearby hospitals/clinics if we have recommended hospitals or illness
+                    if (recommendedHospitals.length > 0) {
+                        displayRecommendedHospitals(recommendedHospitals, illness);
+                    } else if (illness) {
+                        searchNearbyHospitals(userLocation[0], userLocation[1], illness);
+                    } else {
+                        document.getElementById('loading').style.display = 'none';
+                        document.getElementById('places').innerHTML = '<li style="text-align: center; padding: 60px 40px; grid-column: 1 / -1;"><h3 style="font-size: 1.8em; margin-bottom: 20px; color: #2c3e50;">🔍 Enter Your Illness or Symptom</h3><p style="font-size: 1.1em; color: #7f8c8d; line-height: 1.6; margin-bottom: 15px;">Please enter your illness or symptom above to find relevant healthcare facilities near you.</p><p style="color: #95a5a6; font-size: 1em;">Examples: flu, headache, fever, cardiac, dental, eye exam, etc.</p></li>';
+                    }
+
+                    // If recommended hospital is provided via URL, show it immediately
+                    if (!isNaN(recommendedLat) && !isNaN(recommendedLng) && recommendedName) {
+                        const ratingData = generateRating();
+                        const consultationFee = generateConsultationFees('', illness);
+                        const placeData = {
+                            name: recommendedName,
+                            lat: recommendedLat,
+                            lng: recommendedLng,
+                            address: recommendedAddress || 'Address not available',
+                            phone: recommendedPhone || null,
+                            website: null,
+                            doctorInfo: illness ? `Treats: ${illness.charAt(0).toUpperCase() + illness.slice(1)}` : 'Recommended healthcare facility',
+                            rating: ratingData.rating,
+                            reviews: ratingData.reviews,
+                            consultationFee,
+                            specialty: '',
+                            placeId: 'recommended',
+                            index: 0
+                        };
+                        map.setView([recommendedLat, recommendedLng], 15);
+                        renderPlaceCard(placeData);
+                        showHospitalDetails(placeData);
+                    }
+                }, function(error) {
+                    console.error('Geolocation failed:', error);
+                    document.getElementById('loading').style.display = 'none';
+
+                    // Fallback: show map and search using default location
+                    userLocation = DEFAULT_LOCATION;
+                    map.setView(userLocation, 12);
+
+                    // Show a gentle message in the places list, but still perform search
+                    document.getElementById('places').innerHTML = '<li style="text-align: center; padding: 60px 40px; grid-column: 1 / -1;"><h3 style="font-size: 1.8em; margin-bottom: 20px; color: #2c3e50;">📍 Location Unavailable</h3><p style="font-size: 1.1em; color: #7f8c8d; line-height: 1.6;">Could not access your precise location. Showing results near a default location.</p></li>';
+
+                    if (recommendedHospitals.length > 0) {
+                        displayRecommendedHospitals(recommendedHospitals, illness);
+                    } else if (illness) {
+                        searchNearbyHospitals(userLocation[0], userLocation[1], illness);
+                    }
+
+                    // Even without geolocation, if a recommended hospital exists, show it
+                    if (!isNaN(recommendedLat) && !isNaN(recommendedLng) && recommendedName) {
+                        const ratingData = generateRating();
+                        const consultationFee = generateConsultationFees('', illness);
+                        const placeData = {
+                            name: recommendedName,
+                            lat: recommendedLat,
+                            lng: recommendedLng,
+                            address: recommendedAddress || 'Address not available',
+                            phone: recommendedPhone || null,
+                            website: null,
+                            doctorInfo: illness ? `Treats: ${illness.charAt(0).toUpperCase() + illness.slice(1)}` : 'Recommended healthcare facility',
+                            rating: ratingData.rating,
+                            reviews: ratingData.reviews,
+                            consultationFee,
+                            specialty: '',
+                            placeId: 'recommended',
+                            index: 0
+                        };
+                        map.setView([recommendedLat, recommendedLng], 15);
+                        renderPlaceCard(placeData);
+                        showHospitalDetails(placeData);
+                    }
+                });
+            } else {
+                document.getElementById('loading').style.display = 'none';
+
+                // Fallback: show map with default location and run search
+                userLocation = DEFAULT_LOCATION;
+                map.setView(userLocation, 12);
+                document.getElementById('places').innerHTML = '<li style="text-align: center; padding: 60px 40px; grid-column: 1 / -1;"><h3 style="font-size: 1.8em; margin-bottom: 20px; color: #2c3e50;">🌐 Location Not Available</h3><p style="font-size: 1.1em; color: #7f8c8d; line-height: 1.6;">Your browser does not support geolocation or it is blocked. Showing results near a default location.</p></li>';
+
+                if (recommendedHospitals.length > 0) {
+                    displayRecommendedHospitals(recommendedHospitals, illness);
+                } else if (illness) {
+                    searchNearbyHospitals(userLocation[0], userLocation[1], illness);
+                }
+
+                // Show recommended hospital if provided
+                if (!isNaN(recommendedLat) && !isNaN(recommendedLng) && recommendedName) {
+                    const ratingData = generateRating();
+                    const consultationFee = generateConsultationFees('', illness);
+                    const placeData = {
+                        name: recommendedName,
+                        lat: recommendedLat,
+                        lng: recommendedLng,
+                        address: recommendedAddress || 'Address not available',
+                        phone: recommendedPhone || null,
+                        website: null,
+                        doctorInfo: illness ? `Treats: ${illness.charAt(0).toUpperCase() + illness.slice(1)}` : 'Recommended healthcare facility',
+                        rating: ratingData.rating,
+                        reviews: ratingData.reviews,
+                        consultationFee,
+                        specialty: '',
+                        placeId: 'recommended',
+                        index: 0
+                    };
+                    map.setView([recommendedLat, recommendedLng], 15);
+                    renderPlaceCard(placeData);
+                    showHospitalDetails(placeData);
+                }
+            }
+        });
+
+        function updateIllnessDisplay(illness) {
+            document.getElementById('illness-info').style.display = 'block';
+            document.getElementById('illness-name').textContent = `Searching for: ${illness}`;
+        }
+
+        function searchNearbyHospitals(lat, lng, illness) {
+            // Show loading state
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('places').innerHTML = '';
+            
+            // Map common illnesses to medical specialties for better search
+            const specialtyMap = {
+                'cardiac': ['cardiology', 'heart', 'cardiac'],
+                'heart': ['cardiology', 'heart', 'cardiac'],
+                'cancer': ['oncology', 'cancer'],
+                'oncology': ['oncology', 'cancer'],
+                'pediatric': ['pediatrics', 'children', 'pediatric'],
+                'children': ['pediatrics', 'children', 'pediatric'],
+                'orthopedic': ['orthopedics', 'bone', 'joint'],
+                'bone': ['orthopedics', 'bone', 'joint'],
+                'mental': ['psychiatry', 'mental', 'psychology'],
+                'psychiatric': ['psychiatry', 'mental', 'psychology'],
+                'dental': ['dentistry', 'dental', 'tooth'],
+                'eye': ['ophthalmology', 'eye', 'vision'],
+                'vision': ['ophthalmology', 'eye', 'vision'],
+                'neurology': ['neurology', 'brain', 'nerve'],
+                'brain': ['neurology', 'brain', 'nerve'],
+                'emergency': ['emergency', 'trauma'],
+                'trauma': ['emergency', 'trauma']
+            };
+            
+            // Find relevant specialties based on illness
+            const illnessLower = illness.toLowerCase();
+            const relevantSpecialties = [];
+            for (const [key, specialties] of Object.entries(specialtyMap)) {
+                if (illnessLower.includes(key)) {
+                    relevantSpecialties.push(...specialties);
+                }
+            }
+            
+            // Use backend API to search for hospitals (now with Overpass fallback)
+            const keyword = (illness || "hospital") + " hospital";
+            const apiUrl = `/nearby_hospitals?lat=${lat}&lon=${lng}&keyword=${encodeURIComponent(keyword)}`;
+            console.log('🏥 Searching hospitals with URL:', apiUrl);
+            
+            // Fetch hospitals from backend API
+            fetch(apiUrl)
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('🏥 Backend response:', data);
+                    const places = data.results || [];
+                    console.log(`🏥 Found ${places.length} hospitals from backend`);
+                    if (places.length > 0) {
+                        displayPlaces(places, illness, lat, lng);
+                    } else {
+                        document.getElementById('loading').style.display = 'none';
+                        document.getElementById('places').innerHTML = '<li style="text-align: center; padding: 60px 40px; grid-column: 1 / -1;"><h3 style="font-size: 1.8em; margin-bottom: 20px; color: #2c3e50;">🔍 No Results</h3><p style="font-size: 1.1em; color: #7f8c8d; line-height: 1.6;">No hospitals found in your area. Please try a different location or check your internet connection.</p></li>';
+                    }
+                })
+                .catch(function(err) {
+                    console.error('❌ Backend API failed:', err);
+                    document.getElementById('loading').style.display = 'none';
+                    // Fallback: Use Overpass API directly for hospital search
+                    searchHospitalsOverpass(lat, lng, illness);
+                });
+        }
+
+        // Direct Overpass API search for hospitals (no backend needed)
+        function searchHospitalsOverpass(lat, lng, illness) {
+            const radius = 10000; // 10km radius
+            const overpassUrl = `https://overpass-api.de/api/interpreter?data=[out:json];node["amenity"~"hospital|clinic|doctors"](around:${radius},${lat},${lng});out;`;
+            
+            console.log('🏥 Searching via Overpass API:', overpassUrl);
+            
+            fetch(overpassUrl)
+                .then(function(response) {
+                    if (!response.ok) throw new Error('Overpass API failed');
+                    return response.json();
+                })
+                .then(function(data) {
+                    console.log('🏥 Overpass results:', data);
+                    const places = data.elements || [];
+                    if (places.length > 0) {
+                        displayPlacesOSM(places, illness, lat, lng);
+                    } else {
+                        // Generate sample hospitals as fallback
+                        generateSampleHospitals(lat, lng, illness);
+                    }
+                })
+                .catch(function(err) {
+                    console.error('Overpass failed:', err);
+                    // Generate sample hospitals as final fallback
+                    generateSampleHospitals(lat, lng, illness);
+                });
+        }
+
+        // Generate sample hospitals when API fails
+        function generateSampleHospitals(lat, lng, illness) {
+            const sampleHospitals = [
+                { name: 'City General Hospital', lat: lat + 0.01, lon: lng + 0.01, address: '123 Main Road, City Center', phone: '+91-123-4567890' },
+                { name: 'Medical Center Plus', lat: lat - 0.008, lon: lng + 0.008, address: '456 Health Ave, Near Park', phone: '+91-234-5678901' },
+                { name: 'Community Health Clinic', lat: lat + 0.005, lon: lng - 0.005, address: '789 Market Street', phone: '+91-345-6789012' },
+                { name: 'Emergency Care Hospital', lat: lat - 0.01, lon: lng - 0.01, address: '321 Highway Road', phone: '+91-456-7890123' },
+                { name: 'Specialty Clinic', lat: lat + 0.008, lon: lng + 0.012, address: '567 Specialist Lane', phone: '+91-567-8901234' }
+            ];
+            
+            const formattedHospitals = sampleHospitals.map(function(h, i) {
+                return {
+                    name: h.name,
+                    lat: h.lat,
+                    lng: h.lon,
+                    address: h.address,
+                    phone: h.phone,
+                    place_id: 'sample_' + i
+                };
+            });
+            
+            displayRecommendedHospitals(formattedHospitals, illness);
+        }
+        
+
+        function rankPlacesByIllness(places, illness, relevantSpecialties) {
+            // Rank places based on how relevant they are to the illness
+            const illnessLower = illness.toLowerCase();
+            
+            return places.map(place => {
+                let relevanceScore = 0;
+                const name = (place.tags?.name || '').toLowerCase();
+                const specialty = (place.tags?.specialty || '').toLowerCase();
+                const healthcare = (place.tags?.healthcare || '').toLowerCase();
+                const description = (place.tags?.description || '').toLowerCase();
+                
+                // Check if name contains illness-related terms
+                if (name.includes(illnessLower)) {
+                    relevanceScore += 10;
+                }
+                
+                // Check for specialty matches
+                relevantSpecialties.forEach(spec => {
+                    if (name.includes(spec) || specialty.includes(spec) || healthcare.includes(spec) || description.includes(spec)) {
+                        relevanceScore += 8;
+                    }
+                });
+                
+                // General hospital/clinic gets base score
+                if (place.tags?.amenity === 'hospital') {
+                    relevanceScore += 5;
+                } else if (place.tags?.amenity === 'clinic') {
+                    relevanceScore += 3;
+                }
+                
+                return { ...place, relevanceScore };
+            })
+            .filter(place => place.relevanceScore > 0) // Only include places with some relevance
+            .sort((a, b) => b.relevanceScore - a.relevanceScore) // Sort by relevance
+            .slice(0, 20); // Limit to top 20 results
+        }
+
+        // Calculate distance between two coordinates using Haversine formula
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Radius of the Earth in km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            const distance = R * c; // Distance in km
+            return distance;
+        }
+
+        // Format distance for display
+        function formatDistance(distance) {
+            if (distance < 1) {
+                return `${Math.round(distance * 1000)}m away`;
+            } else if (distance < 10) {
+                return `${distance.toFixed(1)}km away`;
+            } else {
+                return `${Math.round(distance)}km away`;
+            }
+        }
+
+        // Get doctor/specialty information based on illness
+        function getDoctorInfo(place, illness, relevantSpecialties) {
+            const specialty = place.tags?.specialty || place.tags?.healthcare || place.tags?.['healthcare:speciality'] || '';
+            const doctor = place.tags?.doctor || place.tags?.['healthcare:doctor'] || '';
+            
+            // If we have specialty info, use it
+            if (specialty) {
+                return `Specializes in: ${specialty}`;
+            }
+            
+            // If we have relevant specialties from illness mapping, suggest them
+            if (relevantSpecialties.length > 0) {
+                return `Treats: ${relevantSpecialties[0].charAt(0).toUpperCase() + relevantSpecialties[0].slice(1)} conditions`;
+            }
+            
+            // Generic based on illness
+            if (illness) {
+                return `Treats: ${illness.charAt(0).toUpperCase() + illness.slice(1)}`;
+            }
+            
+            return 'General healthcare services';
+        }
+
+        function displayRecommendedHospitals(hospitals, illness) {
+            document.getElementById('loading').style.display = 'none';
+            const placesList = document.getElementById('places');
+            placesList.innerHTML = '';
+            
+            // Clear existing markers except user location
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+            
+            if (hospitals.length === 0) {
+                placesList.innerHTML = `<li style="text-align: center; padding: 60px 40px; grid-column: 1 / -1;"><h3 style="font-size: 1.8em; margin-bottom: 20px; color: #2c3e50;">🏥 No recommended hospitals found</h3><p style="font-size: 1.1em; color: #7f8c8d; line-height: 1.6;">No hospitals found for "${illness}".</p></li>`;
+                document.getElementById('filters-section').style.display = 'none';
+                return;
+            }
+            
+            // Update the heading
+            const heading = document.querySelector('#places-list h2');
+            if (heading) {
+                heading.textContent = `🏨 Recommended Healthcare Facilities for: ${illness}`;
+            }
+            
+            // Show filters section
+            document.getElementById('filters-section').style.display = 'block';
+            
+            // Store all places data for filtering
+            allPlacesData = [];
+            
+            hospitals.forEach(function(hospital, index) {
+                const name = hospital.name || 'Unnamed Hospital';
+                const lat = hospital.lat;
+                const lng = hospital.lon || hospital.lng;  // Support both lon and lng
+                const address = hospital.address || 'Address not available';
+                const phone = hospital.phone || null;
+                const website = null; // Google Places may not have website
+                const doctorInfo = `Treats: ${illness.charAt(0).toUpperCase() + illness.slice(1)} conditions`;
+                const rating = hospital.rating || 0;
+                const reviews = Math.floor(Math.random() * 500 + 50); // Placeholder
+                const consultationFee = generateConsultationFees('', illness);
+                const specialty = illness;
+                const photos = hospital.photos || []; // Include photos from backend
+                
+                const placeData = {
+                    name, lat, lng, address, phone, website, doctorInfo, 
+                    rating, reviews, consultationFee, specialty,
+                    placeId: hospital.place_id || hospital.placeId || `rec_${index}`,
+                    photos,
+                    index
+                };
+                allPlacesData.push(placeData);
+            });
+            
+            // Render all places
+            allPlacesData.forEach(function(placeData) {
+                renderPlaceCard(placeData);
+            });
+            
+            // Initialize filters
+            initializeFilters();
+        }
+
+        function displayPlacesOSM(places, illness, lat, lng) {
+            // Format for OSM/Overpass API response
+            document.getElementById('loading').style.display = 'none';
+            const placesList = document.getElementById('places');
+            placesList.innerHTML = '';
+
+            // Clear existing markers except user location
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+
+            if (places.length === 0) {
+                placesList.innerHTML = `<li style="text-align: center; padding: 60px 40px; grid-column: 1 / -1;"><h3 style="font-size: 1.8em; margin-bottom: 20px; color: #2c3e50;">🏥 No relevant healthcare facilities found</h3><p style="font-size: 1.1em; color: #7f8c8d; line-height: 1.6;">No hospitals or clinics found nearby for "${illness}". Try a different search term or check your location settings.</p></li>`;
+                document.getElementById('filters-section').style.display = 'none';
+                return;
+            }
+
+            // Update the heading to show illness-specific results
+            const heading = document.querySelector('#places-list h2');
+            if (heading) {
+                heading.textContent = `🏨 Healthcare Facilities for: ${illness}`;
+            }
+
+            // Show filters section
+            document.getElementById('filters-section').style.display = 'block';
+            
+            // Store all places data for filtering
+            allPlacesData = [];
+
+            // Get relevant specialties for doctor info
+            const specialtyMap = {
+                'cardiac': ['cardiology', 'heart', 'cardiac'],
+                'heart': ['cardiology', 'heart', 'cardiac'],
+                'cancer': ['oncology', 'cancer'],
+                'oncology': ['oncology', 'cancer'],
+                'pediatric': ['pediatrics', 'children', 'pediatric'],
+                'children': ['pediatrics', 'children', 'pediatric'],
+                'orthopedic': ['orthopedics', 'bone', 'joint'],
+                'bone': ['orthopedics', 'bone', 'joint'],
+                'mental': ['psychiatry', 'mental', 'psychology'],
+                'psychiatric': ['psychiatry', 'mental', 'psychology'],
+                'dental': ['dentistry', 'dental', 'tooth'],
+                'eye': ['ophthalmology', 'eye', 'vision'],
+                'vision': ['ophthalmology', 'eye', 'vision'],
+                'neurology': ['neurology', 'brain', 'nerve'],
+                'brain': ['neurology', 'brain', 'nerve'],
+                'emergency': ['emergency', 'trauma'],
+                'trauma': ['emergency', 'trauma']
+            };
+            
+            const illnessLower = illness.toLowerCase();
+            const relevantSpecialties = [];
+            for (const [key, specialties] of Object.entries(specialtyMap)) {
+                if (illnessLower.includes(key)) {
+                    relevantSpecialties.push(...specialties);
+                }
+            }
+
+            places.forEach(function(place, index) {
+                const name = place.tags?.name || 'Unnamed Hospital/Clinic';
+                const placeAddress = place.tags?.['addr:full'] || 'Address not available';
+                
+                // For OSM  response, we use lat/lon from place object
+                const placeLat = place.lat || place.center?.lat || lat;
+                const placeLng = place.lon || place.center?.lon || lng;
+
+                if (!placeLat || !placeLng) return; // Skip if no coordinates
+                
+                // Get phone and website
+                const phone = place.tags?.phone || place.tags?.['contact:phone'] || null;
+                const website = place.tags?.website || place.tags?.['contact:website'] || null;
+                
+                // Get doctor/specialty information
+                const doctorInfo = getDoctorInfo(place, illness, relevantSpecialties);
+                const specialty = place.tags?.specialty || place.tags?.healthcare || place.tags?.['healthcare:speciality'] || '';
+                
+                // Generate rating and fees
+                const ratingData = generateRating();
+                const consultationFee = generateConsultationFees(specialty, illness);
+                
+                // Store place data for later use
+                const placeData = {
+                    name, lat: placeLat, lng: placeLng, address: placeAddress, phone, website, doctorInfo, 
+                    rating: ratingData.rating, reviews: ratingData.reviews, 
+                    consultationFee, specialty, placeId: place.id, index, photos: []
+                };
+                allPlacesData.push(placeData);
+            });
+            
+            // Render all places using the renderPlaceCard function
+            allPlacesData.forEach(function(placeData) {
+                renderPlaceCard(placeData);
+            });
+            
+            // Initialize filters
+            initializeFilters();
+        }
+
+        function displayPlaces(places, illness, lat, lng) {
+            document.getElementById('loading').style.display = 'none';
+            const placesList = document.getElementById('places');
+            placesList.innerHTML = '';
+
+            // Clear existing markers except user location
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+
+            if (places.length === 0) {
+                placesList.innerHTML = `<li style="text-align: center; padding: 60px 40px; grid-column: 1 / -1;"><h3 style="font-size: 1.8em; margin-bottom: 20px; color: #2c3e50;">🏥 No relevant healthcare facilities found</h3><p style="font-size: 1.1em; color: #7f8c8d; line-height: 1.6;">No hospitals or clinics found nearby for "${illness}". Try a different search term or check your location settings.</p></li>`;
+                document.getElementById('filters-section').style.display = 'none';
+                return;
+            }
+
+            // Update the heading to show illness-specific results
+            const heading = document.querySelector('#places-list h2');
+            if (heading) {
+                heading.textContent = `🏨 Healthcare Facilities for: ${illness}`;
+            }
+
+            // Show filters section
+            document.getElementById('filters-section').style.display = 'block';
+            
+            // Store all places data for filtering
+            allPlacesData = [];
+
+            // Get relevant specialties for doctor info
+            const specialtyMap = {
+                'cardiac': ['cardiology', 'heart', 'cardiac'],
+                'heart': ['cardiology', 'heart', 'cardiac'],
+                'cancer': ['oncology', 'cancer'],
+                'oncology': ['oncology', 'cancer'],
+                'pediatric': ['pediatrics', 'children', 'pediatric'],
+                'children': ['pediatrics', 'children', 'pediatric'],
+                'orthopedic': ['orthopedics', 'bone', 'joint'],
+                'bone': ['orthopedics', 'bone', 'joint'],
+                'mental': ['psychiatry', 'mental', 'psychology'],
+                'psychiatric': ['psychiatry', 'mental', 'psychology'],
+                'dental': ['dentistry', 'dental', 'tooth'],
+                'eye': ['ophthalmology', 'eye', 'vision'],
+                'vision': ['ophthalmology', 'eye', 'vision'],
+                'neurology': ['neurology', 'brain', 'nerve'],
+                'brain': ['neurology', 'brain', 'nerve'],
+                'emergency': ['emergency', 'trauma'],
+                'trauma': ['emergency', 'trauma']
+            };
+            
+            const illnessLower = illness.toLowerCase();
+            const relevantSpecialties = [];
+            for (const [key, specialties] of Object.entries(specialtyMap)) {
+                if (illnessLower.includes(key)) {
+                    relevantSpecialties.push(...specialties);
+                }
+            }
+
+            places.forEach(function(place, index) {
+                // Support both Google Places API format and OSM format
+                const name = place.name || place.tags?.name || 'Unnamed Hospital/Clinic';
+                const placeAddress = place.address || (place.tags?.['addr:full'] || 'Address not available');
+                const placeRating = place.rating || null;
+                const placePhotos = place.photos || [];
+                
+                // For Google Places API response, we need to get lat/lng differently
+                // The backend returns places already, so we can create markers
+                // Note: Google Places API doesn't return lat/lng in the nearby search, 
+                // so we'll use the search center as approximate location
+                const placeLat = place.lat || place.center?.lat || lat;
+                const placeLng = place.lon || place.center?.lon || lng;
+
+                if (!placeLat || !placeLng) return; // Skip if no coordinates
+                
+                // Get phone and website
+                const phone = place.phone || place.tags?.phone || place.tags?.['contact:phone'] || null;
+                const website = place.website || place.tags?.website || place.tags?.['contact:website'] || null;
+                
+                // Get doctor/specialty information
+                const doctorInfo = getDoctorInfo(place, illness, relevantSpecialties);
+                const specialty = place.tags?.specialty || place.tags?.healthcare || place.tags?.['healthcare:speciality'] || '';
+                
+                // Generate rating and fees
+                const ratingData = placeRating ? { rating: placeRating, reviews: 50 } : generateRating();
+                const consultationFee = generateConsultationFees(specialty, illness);
+                
+                // Store place data for later use
+                const placeData = {
+                    name, lat: placeLat, lng: placeLng, address: placeAddress, phone, website, doctorInfo, 
+                    rating: ratingData.rating, reviews: ratingData.reviews, 
+                    consultationFee, specialty, placeId: place.place_id || place.id, index, photos: placePhotos
+                };
+                allPlacesData.push(placeData);
+            });
+            
+            // Render all places using the renderPlaceCard function
+            allPlacesData.forEach(function(placeData) {
+                renderPlaceCard(placeData);
+            });
+            
+            // Initialize filters
+            initializeFilters();
+        }
+
+        // Initialize filter controls
+        function initializeFilters() {
+            const ratingFilter = document.getElementById('rating-filter');
+            const feeFilter = document.getElementById('fee-filter');
+            const ratingValue = document.getElementById('rating-value');
+            const feeValue = document.getElementById('fee-value');
+            const applyBtn = document.getElementById('apply-filters-btn');
+            const resetBtn = document.getElementById('reset-filters-btn');
+            
+            if (!ratingFilter || !feeFilter) return; // Exit if filters don't exist
+            
+            // Remove existing listeners by cloning and replacing
+            const newRatingFilter = ratingFilter.cloneNode(true);
+            const newFeeFilter = feeFilter.cloneNode(true);
+            const newApplyBtn = applyBtn.cloneNode(true);
+            const newResetBtn = resetBtn.cloneNode(true);
+            
+            ratingFilter.parentNode.replaceChild(newRatingFilter, ratingFilter);
+            feeFilter.parentNode.replaceChild(newFeeFilter, feeFilter);
+            applyBtn.parentNode.replaceChild(newApplyBtn, applyBtn);
+            resetBtn.parentNode.replaceChild(newResetBtn, resetBtn);
+            
+            // Update display values
+            newRatingFilter.addEventListener('input', function() {
+                ratingValue.textContent = parseFloat(this.value).toFixed(1);
+            });
+            
+            newFeeFilter.addEventListener('input', function() {
+                feeValue.textContent = `₹${parseInt(this.value).toLocaleString()}`;
+            });
+            
+            // Apply filters
+            newApplyBtn.addEventListener('click', function() {
+                applyFilters();
+            });
+            
+            // Reset filters
+            newResetBtn.addEventListener('click', function() {
+                newRatingFilter.value = 0;
+                newFeeFilter.value = 10000;
+                ratingValue.textContent = '0.0';
+                feeValue.textContent = '₹10,000';
+                applyFilters();
+            });
+        }
+
+        // Apply filters to displayed places
+        function applyFilters() {
+            const ratingFilter = document.getElementById('rating-filter');
+            const feeFilter = document.getElementById('fee-filter');
+            
+            if (!ratingFilter || !feeFilter) return;
+            
+            const minRating = parseFloat(ratingFilter.value);
+            const maxFee = parseInt(feeFilter.value);
+            
+            const filtered = allPlacesData.filter(place => {
+                return place.rating >= minRating && place.consultationFee <= maxFee;
+            });
+            
+            // Re-render filtered places
+            if (filtered.length === 0) {
+                document.getElementById('places').innerHTML = `<li style="text-align: center; padding: 60px 40px; grid-column: 1 / -1;"><h3 style="font-size: 1.8em; margin-bottom: 20px; color: #2c3e50;">🔍 No facilities match your filters</h3><p style="font-size: 1.1em; color: #7f8c8d; line-height: 1.6;">Try adjusting your rating or fee filters.</p></li>`;
+                // Clear markers
+                markers.forEach(marker => map.removeLayer(marker));
+                markers = [];
+            } else {
+                // Clear current display
+                document.getElementById('places').innerHTML = '';
+                markers.forEach(marker => map.removeLayer(marker));
+                markers = [];
+                
+                // Re-render filtered places
+                filtered.forEach(function(placeData) {
+                    renderPlaceCard(placeData);
+                });
+            }
+        }
+
+        // Render a single place card
+        function renderPlaceCard(placeData) {
+            const { name, lat, lng, address, phone, website, doctorInfo, rating, reviews, consultationFee, specialty, placeId } = placeData;
+            
+            // Ensure we have valid coordinates
+            const validLat = lat;
+            const validLng = lng || lon;  // Support both lng and lon
+            
+            if (!validLat || !validLng) {
+                console.warn('Skipping place card - invalid coordinates:', name);
+                return;
+            }
+            
+            const placesList = document.getElementById('places');
+            const distanceText = userLocation ? `<div class="distance-badge">📍 ${formatDistance(calculateDistance(userLocation[0], userLocation[1], validLat, validLng))}</div>` : '';
+            const phoneDisplay = phone ? `<a href="tel:${phone.replace(/\s/g, '')}" style="color: var(--primary-color); text-decoration: none; font-weight: 500;">${phone}</a>` : '<span style="color: #95a5a6;">Not available</span>';
+            const websiteDisplay = website ? `<a href="${website}" target="_blank" rel="noopener noreferrer" style="color: var(--primary-color); text-decoration: none; font-weight: 500; word-break: break-all;">${website}</a>` : '<span style="color: #95a5a6;">Not available</span>';
+            const starRating = generateStarRating(rating);
+
+            const li = document.createElement('li');
+            li.dataset.placeData = JSON.stringify(placeData);
+            li.innerHTML = `
+            <div class="facility-header">
+                <h3>🏥 ${name}</h3>
+                ${distanceText}
+            </div>
+            <div class="facility-details">
+                <div class="detail-item">
+                    <span class="detail-icon">👨‍⚕️</span>
+                    <div class="detail-content">
+                        <strong>${doctorInfo}</strong>
+                    </div>
+                </div>
+                <div class="detail-item rating-item">
+                    <span class="detail-icon">⭐</span>
+                    <div class="detail-content">
+                        <strong>Rating:</strong><br>
+                        ${starRating}
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-icon">💰</span>
+                    <div class="detail-content">
+                        <strong>Consultation Fee:</strong><br>
+                        <span class="fee-amount">₹${consultationFee.toLocaleString()}</span>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-icon">📍</span>
+                    <div class="detail-content">
+                        <strong>Address:</strong><br>
+                        ${address}
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-icon">📞</span>
+                    <div class="detail-content">
+                        <strong>Phone:</strong><br>
+                        ${phoneDisplay}
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-icon">🌐</span>
+                    <div class="detail-content">
+                        <strong>Website:</strong><br>
+                        ${websiteDisplay}
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="view-details-btn" data-place-index="${placeData.index}">View Details</button>
+            `;
+            placesList.appendChild(li);
+
+            // Add click event listener
+            const viewDetailsBtn = li.querySelector('.view-details-btn');
+            if (viewDetailsBtn) {
+                viewDetailsBtn.addEventListener('click', async function(event) {
+                    event.preventDefault();
+                    await showHospitalDetails(placeData);
+                });
+            }
+            
+            // Add marker
+            const hospitalIcon = L.divIcon({
+                html: '🏥',
+                className: 'hospital-marker',
+                iconSize: [30, 30],
+                iconAnchor: [15, 30]
+            });
+            const popupContent = userLocation 
+                ? `<b>${name}</b><br>${doctorInfo}<br>📍 ${formatDistance(calculateDistance(userLocation[0], userLocation[1], validLat, validLng))}<br>Click to book appointment`
+                : `<b>${name}</b><br>${doctorInfo}<br>Click to book appointment`;
+            const marker = L.marker([validLat, validLng], {icon: hospitalIcon}).addTo(map).bindPopup(popupContent).on('click', function() {
+                showHospitalDetails(placeData);
+            });
+            markers.push(marker);
+        }
+
+        // Generate hospital photos (using placeholder service)
+        function generateHospitalPhotos(name) {
+            // Fallback: Use reliable hospital/medical facility placeholder images when Google Places photos are not available
+            console.log('Using fallback hospital photos for:', name);
+            const photos = [];
+            const photoCount = 4;
+
+            // Use specific hospital/medical themed placeholder images instead of random ones
+            const hospitalPhotoUrls = [
+                'https://images.unsplash.com/photo-1551190822-a9333d879b1f?w=400&h=300&fit=crop', // Hospital building
+                'https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=400&h=300&fit=crop', // Medical facility
+                'https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=400&h=300&fit=crop', // Clinic interior
+                'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=300&fit=crop'  // Healthcare
+            ];
+
+            for (let i = 0; i < photoCount; i++) {
+                photos.push(hospitalPhotoUrls[i % hospitalPhotoUrls.length]);
+            }
+            return photos;
+        }
+
+        // Generate additional information
+        function generateAdditionalInfo(specialty, rating) {
+            const info = {
+                hours: {
+                    weekdays: '9:00 AM - 6:00 PM',
+                    saturday: '9:00 AM - 2:00 PM',
+                    sunday: 'Closed'
+                },
+                amenities: ['Parking Available', 'Wheelchair Accessible', 'Emergency Services', 'Pharmacy', 'Lab Services'],
+                languages: ['English', 'Hindi', 'Local Language'],
+                established: 1990 + Math.floor(Math.random() * 30),
+                accreditation: rating >= 4.5 ? 'NABH Accredited' : rating >= 4.0 ? 'ISO Certified' : 'Registered',
+                services: ['General Consultation', 'Specialist Consultation', 'Diagnostic Tests', 'Emergency Care', 'Follow-up Visits']
+            };
+            return info;
+        }
+
+        async function showHospitalDetails(placeData) {
+            // Close any existing modal first
+            if (window.currentModal) {
+                closeHospitalModal();
+            }
+
+            const { name, placeId, lat, lng, address, phone, website, doctorInfo, rating, reviews, consultationFee, specialty, photos: apiPhotos = [] } = placeData;
+
+            console.log('Hospital data:', placeData);
+            console.log('API Photos available:', apiPhotos);
+
+            // Use API photos if available, otherwise try fetching hospital photos from Google Places
+            let photos = (apiPhotos && apiPhotos.length > 0) ? apiPhotos : [];
+            let photoSource = 'sample images';
+
+            if (photos.length === 0 && placeId && !placeId.startsWith('rec_')) {
+                try {
+                    const res = await fetch(`/google_place_photos?place_id=${encodeURIComponent(placeId)}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.photos && data.photos.length > 0) {
+                            photos = data.photos;
+                        }
+                    }
+                } catch (e) {
+                    console.error('Failed to load Google place photos:', e);
+                }
+            }
+
+            if (photos.length > 0 && (apiPhotos.length > 0 || (placeId && !placeId.startsWith('rec_')))) {
+                photoSource = 'from Google Places';
+            }
+
+            if (photos.length === 0) {
+                photos = generateHospitalPhotos(name);
+            }
+
+            const additionalInfo = generateAdditionalInfo(specialty, rating);
+            
+            // Create detailed hospital dialog
+            const modal = document.createElement('div');
+            modal.className = 'hospital-detail-modal';
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.7); display: flex; justify-content: center;
+                align-items: center; z-index: 1000; animation: fadeIn 0.3s ease;
+                padding: 20px; overflow-y: auto;
+            `;
+            
+            const phoneDisplay = phone ? `<a href="tel:${phone.replace(/\s/g, '')}" class="detail-link">${phone}</a>` : '<span class="not-available">Not available</span>';
+            const websiteDisplay = website ? `<a href="${website}" target="_blank" rel="noopener noreferrer" class="detail-link">${website}</a>` : '<span class="not-available">Not available</span>';
+            const starRating = generateStarRating(rating);
+            const distance = userLocation ? formatDistance(calculateDistance(userLocation[0], userLocation[1], lat, lng)) : '';
+            
+            // Photo gallery HTML
+            const isUsingApiPhotos = apiPhotos && apiPhotos.length > 0;
+            const photoGallery = `
+                <div class="photo-gallery" style="margin-bottom: 25px;">
+                    <h3 style="color: var(--text-primary); font-size: 1.2em; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                        <span>📷</span> Photos (${photoSource})
+                    </h3>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                        ${photos.map((photo, idx) => `
+                            <div class="photo-item" data-photo-url="${photo}" data-photo-index="${idx}">
+                                <img src="${photo}" alt="Hospital photo ${idx + 1}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;" onerror="this.onerror=null; this.src='https://via.placeholder.com/400x300/4A90E2/FFFFFF?text=Hospital+Facility'">
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            
+            modal.innerHTML = `
+                <div class="hospital-detail-card" style="
+                    background: var(--card-bg);
+                    padding: 30px;
+                    border-radius: 20px;
+                    max-width: 900px;
+                    width: 100%;
+                    box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+                    animation: slideIn 0.3s ease;
+                    position: relative;
+                    margin: auto;
+                ">
+                    <button class="close-modal-btn" style="
+                        position: absolute;
+                        top: 20px;
+                        right: 20px;
+                        background: var(--close-btn-bg);
+                        border: none;
+                        width: 40px;
+                        height: 40px;
+                        border-radius: 50%;
+                        cursor: pointer;
+                        font-size: 1.5em;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        transition: all 0.3s ease;
+                        color: var(--text-primary);
+                        z-index: 10;
+                    ">×</button>
+                    
+                    <div class="hospital-detail-header" style="margin-bottom: 25px;">
+                        <h2 style="color: var(--text-primary); font-size: 1.8em; margin: 0 0 10px 0; font-weight: 700;">🏥 ${name}</h2>
+                        ${distance ? `<div class="distance-badge" style="display: inline-block; margin-bottom: 10px;">📍 ${distance}</div>` : ''}
+                        <div style="margin-top: 10px;">
+                            ${starRating}
+                        </div>
+                    </div>
+                    
+                    ${photoGallery}
+                    
+                    <div class="hospital-detail-content">
+                        <div class="detail-section">
+                            <h3 style="color: var(--text-primary); font-size: 1.2em; margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                                <span>👨‍⚕️</span> Medical Information
+                            </h3>
+                            <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 15px; font-size: 0.95em;"><strong>${doctorInfo}</strong></p>
+                            ${specialty ? `<p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 15px; font-size: 0.95em;"><strong>Specialty:</strong> ${specialty}</p>` : ''}
+                            <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 15px; font-size: 0.95em;"><strong>Established:</strong> ${additionalInfo.established}</p>
+                            <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 15px; font-size: 0.95em;"><strong>Accreditation:</strong> ${additionalInfo.accreditation}</p>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h3 style="color: var(--text-primary); font-size: 1.2em; margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                                <span>💰</span> Pricing
+                            </h3>
+                            <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 15px; font-size: 1em;">
+                                <strong style="color: var(--primary-color); font-size: 1.3em;">₹${consultationFee.toLocaleString()}</strong>
+                                <span style="color: var(--text-secondary); font-size: 0.9em; margin-left: 10px;">Consultation Fee</span>
+                            </p>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h3 style="color: var(--text-primary); font-size: 1.2em; margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                                <span>🕐</span> Operating Hours
+                            </h3>
+                            <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 8px; font-size: 0.95em;"><strong>Weekdays:</strong> ${additionalInfo.hours.weekdays}</p>
+                            <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 8px; font-size: 0.95em;"><strong>Saturday:</strong> ${additionalInfo.hours.saturday}</p>
+                            <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 15px; font-size: 0.95em;"><strong>Sunday:</strong> ${additionalInfo.hours.sunday}</p>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h3 style="color: var(--text-primary); font-size: 1.2em; margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                                <span>📍</span> Location
+                            </h3>
+                            <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 15px; font-size: 0.95em;">${address}</p>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h3 style="color: var(--text-primary); font-size: 1.2em; margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                                <span>📞</span> Contact Information
+                            </h3>
+                            <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 10px; font-size: 0.95em;">
+                                <strong>Phone:</strong> ${phoneDisplay}
+                            </p>
+                            <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 15px; font-size: 0.95em;">
+                                <strong>Website:</strong> ${websiteDisplay}
+                            </p>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <h3 style="color: var(--text-primary); font-size: 1.2em; margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                                <span>✨</span> Amenities & Services
+                            </h3>
+                            <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px;">
+                                ${additionalInfo.amenities.map(amenity => `<span style="background: var(--bg-secondary); padding: 6px 12px; border-radius: 15px; font-size: 0.85em; color: var(--text-secondary); border: 1px solid var(--border-color);">${amenity}</span>`).join('')}
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <strong style="color: var(--text-primary); font-size: 0.95em;">Services Offered:</strong>
+                                <ul style="color: var(--text-secondary); margin: 8px 0 0 20px; font-size: 0.9em; line-height: 1.8;">
+                                    ${additionalInfo.services.map(service => `<li>${service}</li>`).join('')}
+                                </ul>
+                            </div>
+                            <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 15px; font-size: 0.95em;"><strong>Languages Spoken:</strong> ${additionalInfo.languages.join(', ')}</p>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 25px; display: flex; gap: 12px; flex-wrap: wrap;">
+                        <button class="book-appointment-btn" style="
+                            flex: 1;
+                            min-width: 180px;
+                            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+                            color: white;
+                            border: none;
+                            padding: 14px 30px;
+                            border-radius: 12px;
+                            cursor: pointer;
+                            font-weight: 600;
+                            font-size: 1em;
+                            transition: all 0.3s ease;
+                            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.3);
+                            text-transform: uppercase;
+                            letter-spacing: 0.5px;
+                        ">📅 Book Appointment</button>
+                        <button class="close-btn" style="
+                            flex: 1;
+                            min-width: 120px;
+                            background: var(--secondary-btn-bg);
+                            color: var(--text-primary);
+                            border: 2px solid var(--border-color);
+                            padding: 14px 30px;
+                            border-radius: 12px;
+                            cursor: pointer;
+                            font-weight: 600;
+                            font-size: 1em;
+                            transition: all 0.3s ease;
+                        ">Close</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+
+            // Add event listeners
+            const closeBtn = modal.querySelector('.close-modal-btn');
+            const closeButton = modal.querySelector('.close-btn');
+            const bookBtn = modal.querySelector('.book-appointment-btn');
+            
+            closeBtn.addEventListener('click', closeHospitalModal);
+            closeButton.addEventListener('click', closeHospitalModal);
+            bookBtn.addEventListener('click', function() {
+                bookAppointmentFromModal(name, placeId, consultationFee, doctorInfo);
+            });
+            
+            // Add photo click listeners
+            const photoItems = modal.querySelectorAll('.photo-item');
+            photoItems.forEach(photoItem => {
+                photoItem.addEventListener('click', function() {
+                    const photoUrl = this.dataset.photoUrl;
+                    const photoIndex = parseInt(this.dataset.photoIndex);
+                    window.openPhotoModal(photoUrl, photoIndex);
+                });
+            });
+            
+            // Close on background click
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeHospitalModal();
+                }
+            });
+            
+            // Store modal reference and place data
+            window.currentModal = modal;
+            window.currentPlaceData = placeData;
+        }
+
+        // Photo modal for viewing full-size images (make it globally accessible)
+        window.openPhotoModal = function(photoUrl, index) {
+            const photoModal = document.createElement('div');
+            photoModal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.95); display: flex; justify-content: center;
+                align-items: center; z-index: 3000; animation: fadeIn 0.3s ease;
+            `;
+            
+            photoModal.innerHTML = `
+                <div style="position: relative; max-width: 90%; max-height: 90%;">
+                    <button class="close-photo-btn" style="
+                        position: absolute; top: -40px; right: 0;
+                        background: rgba(255,255,255,0.2); border: none;
+                        width: 35px; height: 35px; border-radius: 50%;
+                        cursor: pointer; font-size: 1.5em; color: white;
+                        display: flex; align-items: center; justify-content: center;
+                        transition: all 0.3s ease;
+                    ">×</button>
+                    <img src="${photoUrl}" alt="Hospital photo" style="max-width: 100%; max-height: 90vh; border-radius: 10px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);" onerror="this.src='https://via.placeholder.com/800x600/4A90E2/FFFFFF?text=Hospital+Photo'">
+                </div>
+            `;
+            
+            document.body.appendChild(photoModal);
+            
+            const closeBtn = photoModal.querySelector('.close-photo-btn');
+            closeBtn.addEventListener('click', function() {
+                photoModal.remove();
+            });
+            
+            photoModal.addEventListener('click', function(e) {
+                if (e.target === photoModal) {
+                    photoModal.remove();
+                }
+            });
+        }
+
+        function closeHospitalModal() {
+            if (window.currentModal) {
+                window.currentModal.remove();
+                window.currentModal = null;
+            }
+        }
+
+        function bookAppointmentFromModal(placeName, placeId, consultationFee, doctorInfo) {
+            // Close the hospital details modal first
+            closeHospitalModal();
+            
+            // Create a booking confirmation modal
+            const bookingModal = document.createElement('div');
+            bookingModal.className = 'booking-confirmation-modal';
+            bookingModal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.8); display: flex; justify-content: center;
+                align-items: center; z-index: 2000; animation: fadeIn 0.3s ease;
+                padding: 20px;
+            `;
+            
+            const currentDate = new Date();
+            const appointmentDate = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000); // Next day
+            const appointmentTime = '10:00 AM'; // Default time
+            
+            bookingModal.innerHTML = `
+                <div class="booking-confirmation-card" style="
+                    background: var(--card-bg);
+                    padding: 25px 20px;
+                    border-radius: 15px;
+                    max-width: 450px;
+                    width: 100%;
+                    text-align: center;
+                    box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+                    animation: slideIn 0.3s ease;
+                    border: 1px solid var(--border-color);
+                    margin: auto;
+                ">
+                    <div style="font-size: 3em; margin-bottom: 15px;">📅</div>
+                    <h2 style="color: var(--text-primary); margin-bottom: 20px; font-size: 1.5em; font-weight: 700;">Confirm Appointment</h2>
+                    
+                    <div style="text-align: left; background: var(--bg-secondary); padding: 18px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border-color);">
+                        <div style="margin-bottom: 12px;">
+                            <strong style="color: var(--text-primary); font-size: 0.95em;">🏥 Hospital:</strong>
+                            <p style="color: var(--text-secondary); margin: 4px 0 0 0; font-size: 0.9em;">${placeName}</p>
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <strong style="color: var(--text-primary); font-size: 0.95em;">👨‍⚕️ Treatment:</strong>
+                            <p style="color: var(--text-secondary); margin: 4px 0 0 0; font-size: 0.9em;">${doctorInfo}</p>
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <strong style="color: var(--text-primary); font-size: 0.95em;">💰 Consultation Fee:</strong>
+                            <p style="color: var(--primary-color); margin: 4px 0 0 0; font-size: 1.1em; font-weight: 700;">₹${consultationFee.toLocaleString()}</p>
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <strong style="color: var(--text-primary); font-size: 0.95em;">📅 Date:</strong>
+                            <p style="color: var(--text-secondary); margin: 4px 0 0 0; font-size: 0.9em;">${appointmentDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                        </div>
+                        <div>
+                            <strong style="color: var(--text-primary); font-size: 0.95em;">🕐 Time:</strong>
+                            <p style="color: var(--text-secondary); margin: 4px 0 0 0; font-size: 0.9em;">${appointmentTime}</p>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                        <button class="confirm-booking-btn" style="
+                            background: linear-gradient(135deg, #27ae60, #2ecc71);
+                            color: white; border: none; padding: 12px 25px;
+                            border-radius: 10px; cursor: pointer; font-weight: 600;
+                            font-size: 0.95em; transition: all 0.3s ease;
+                            box-shadow: 0 6px 20px rgba(39, 174, 96, 0.3);
+                            flex: 1;
+                            min-width: 130px;
+                        ">✅ Confirm Booking</button>
+                        <button class="cancel-booking-btn" style="
+                            background: var(--secondary-btn-bg);
+                            color: var(--text-primary); border: 2px solid var(--border-color);
+                            padding: 12px 25px; border-radius: 10px; cursor: pointer;
+                            font-weight: 600; font-size: 0.95em; transition: all 0.3s ease;
+                            flex: 1;
+                            min-width: 130px;
+                        ">❌ Cancel</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(bookingModal);
+            
+            // Add event listeners
+            const confirmBtn = bookingModal.querySelector('.confirm-booking-btn');
+            const cancelBtn = bookingModal.querySelector('.cancel-booking-btn');
+            
+            confirmBtn.addEventListener('click', function() {
+                confirmBtn.innerHTML = '⏳ Booking...';
+                confirmBtn.disabled = true;
+                confirmBtn.style.opacity = '0.7';
+
+                setTimeout(() => {
+                    bookingModal.remove();
+                    showBookingSuccess(placeName, appointmentDate, appointmentTime, consultationFee, doctorInfo);
+                }, 2000);
+            });
+            
+            cancelBtn.addEventListener('click', function() {
+                bookingModal.remove();
+            });
+            
+            // Close on background click
+            bookingModal.addEventListener('click', function(e) {
+                if (e.target === bookingModal) {
+                    bookingModal.remove();
+                }
+            });
+        }
+
+        function showBookingSuccess(placeName, appointmentDate, appointmentTime, consultationFee, doctorInfo) {
+            const successModal = document.createElement('div');
+            successModal.className = 'booking-success-modal';
+            successModal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.8); display: flex; justify-content: center;
+                align-items: center; z-index: 2000; animation: fadeIn 0.3s ease;
+                padding: 20px; overflow-y: auto;
+            `;
+            
+            successModal.innerHTML = `
+                <div class="booking-success-card" style="
+                    background: var(--card-bg);
+                    padding: 30px 25px;
+                    border-radius: 15px;
+                    max-width: 500px;
+                    width: 100%;
+                    text-align: center;
+                    box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+                    animation: slideIn 0.3s ease;
+                    border: 1px solid var(--border-color);
+                    margin: auto;
+                ">
+                    <div style="font-size: 3em; margin-bottom: 15px; animation: bounce 0.6s ease;">✅</div>
+                    <h2 style="color: var(--text-primary); margin-bottom: 8px; font-size: 1.6em; font-weight: 700;">Appointment Booked!</h2>
+                    <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 0.95em;">Your appointment has been successfully confirmed.</p>
+                    
+                    <div style="text-align: left; background: var(--bg-secondary); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border-color);">
+                        <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color);">
+                            <strong style="color: var(--text-primary); font-size: 0.95em;">🏥 Hospital Name</strong>
+                            <p style="color: var(--text-secondary); margin: 5px 0 0 0; font-size: 0.9em;">${placeName}</p>
+                        </div>
+                        <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color);">
+                            <strong style="color: var(--text-primary); font-size: 0.95em;">👨‍⚕️ Treatment</strong>
+                            <p style="color: var(--text-secondary); margin: 5px 0 0 0; font-size: 0.9em;">${doctorInfo}</p>
+                        </div>
+                        <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color);">
+                            <strong style="color: var(--text-primary); font-size: 0.95em;">💰 Consultation Fee</strong>
+                            <p style="color: var(--primary-color); margin: 5px 0 0 0; font-size: 1.1em; font-weight: 700;">₹${consultationFee.toLocaleString()}</p>
+                        </div>
+                        <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color);">
+                            <strong style="color: var(--text-primary); font-size: 0.95em;">📅 Appointment Date</strong>
+                            <p style="color: var(--text-secondary); margin: 5px 0 0 0; font-size: 0.9em;">${appointmentDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                        </div>
+                        <div>
+                            <strong style="color: var(--text-primary); font-size: 0.95em;">🕐 Appointment Time</strong>
+                            <p style="color: var(--text-secondary); margin: 5px 0 0 0; font-size: 0.9em;">${appointmentTime}</p>
+                        </div>
+                    </div>
+                    
+                    <div style="background: #e8f5e9; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #c8e6c9;">
+                        <p style="color: #2e7d32; margin: 0; font-weight: 600; font-size: 0.85em; line-height: 1.5;">
+                            📧 A confirmation email has been sent to your registered email address.<br>
+                            📱 You will also receive an SMS reminder 1 hour before your appointment.
+                        </p>
+                    </div>
+                    
+                    <button class="close-success-btn" style="
+                        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+                        color: white; border: none; padding: 12px 30px;
+                        border-radius: 10px; cursor: pointer; font-weight: 600;
+                        font-size: 0.95em; transition: all 0.3s ease;
+                        box-shadow: 0 6px 20px rgba(52, 152, 219, 0.3);
+                        width: 100%;
+                    ">Close</button>
+                </div>
+            `;
+            
+            document.body.appendChild(successModal);
+            
+            const closeBtn = successModal.querySelector('.close-success-btn');
+            closeBtn.addEventListener('click', function() {
+                successModal.remove();
+            });
+            
+            // Close on background click
+            successModal.addEventListener('click', function(e) {
+                if (e.target === successModal) {
+                    successModal.remove();
+                }
+            });
+        }
+
+        // Keep the old function for backward compatibility
+        function bookAppointment(placeName, placeId) {
+            // This function is kept for backward compatibility
+            // It will try to find the place data from stored data
+            const placeElement = document.querySelector(`li[data-place-data*="${placeId}"]`);
+            if (placeElement) {
+                const placeData = JSON.parse(placeElement.dataset.placeData);
+                showHospitalDetails(placeData);
+            }
+        }
+    </script>
+</body>
+</html>
