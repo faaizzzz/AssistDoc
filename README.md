@@ -254,27 +254,8 @@ AssistDoc integrates Google Maps API to:
 
 ---
 
-# 📸 Screenshots
 
-- Home Page
-- AI Chatbot
-- Disease Prediction
-- Hospital Recommendation
-- Appointment Booking
 
-(Add screenshots here.)
-
----
-
-# 👨‍💻 Authors
-
-**Faaiz Shaikh**
-
-Bachelor of Engineering
-
-Artificial Intelligence & Data Science
-
----
 
 # 📄 License
 
